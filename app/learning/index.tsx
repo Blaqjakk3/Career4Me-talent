@@ -21,6 +21,8 @@ import {
   Query,
   ID,
 } from '../../lib/appwrite';
+import { router } from 'expo-router';
+import { ArrowLeft } from 'lucide-react-native';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -87,6 +89,9 @@ interface Project {
   tools: string[];
   prerequisites: string[];
   careerPathId: string;
+  outcome: string;
+  steps: string[];
+  evaluationCriteria: string[];
 }
 
 interface UserProgress {
@@ -113,6 +118,8 @@ const Learning = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState<'learning' | 'certifications' | 'projects'>('learning');
+  const [projectModalVisible, setProjectModalVisible] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
   // Modal State
   const [modalVisible, setModalVisible] = useState(false);
@@ -140,7 +147,16 @@ const Learning = () => {
       // Load career path details
       const pathData = await getCareerPathById(currentUser.selectedPath);
       if (pathData) {
-        setCareerPath(pathData);
+        setCareerPath({
+          $id: pathData.$id,
+          title: pathData.title,
+          description: pathData.description,
+          tags: pathData.tags,
+          time_to_complete: pathData.time_to_complete,
+          required_background: pathData.required_background,
+          learning_style: pathData.learning_style,
+          suggestedDegrees: pathData.suggestedDegrees,
+        });
         await loadLearningData(currentUser.selectedPath, currentUser.$id);
       }
     } catch (error) {
@@ -150,6 +166,10 @@ const Learning = () => {
       setLoading(false);
     }
   };
+  const handleProjectClick = (project: Project) => {
+  setSelectedProject(project);
+  setProjectModalVisible(true);
+    };
 
   const loadLearningData = async (careerPathId: string, userId: string) => {
     try {
@@ -164,7 +184,15 @@ const Learning = () => {
             Query.limit(100)
           ]
         );
-        setLearningStages(stagesResponse.documents as LearningStage[]);
+        setLearningStages(
+          stagesResponse.documents.map((doc: any) => ({
+            $id: doc.$id,
+            title: doc.title,
+            description: doc.description,
+            order: doc.order,
+            careerPathId: doc.careerPathId,
+          })) as LearningStage[]
+        );
 
         // Load topics for each stage
         const topicsMap: Record<string, Topic[]> = {};
@@ -179,7 +207,13 @@ const Learning = () => {
                 Query.limit(100)
               ]
             );
-            topicsMap[stage.$id] = topicsResponse.documents as Topic[];
+            topicsMap[stage.$id] = topicsResponse.documents.map((doc: any) => ({
+              $id: doc.$id,
+              title: doc.title,
+              description: doc.description,
+              order: doc.order,
+              learning_stageId: doc.learning_stageId,
+            })) as Topic[];
           } catch (topicError) {
             console.warn(`Error loading topics for stage ${stage.$id}:`, topicError);
             topicsMap[stage.$id] = [];
@@ -222,7 +256,17 @@ const Learning = () => {
             Query.limit(100)
           ]
         );
-        setCertifications(certificationsResponse.documents as Certification[]);
+        setCertifications(
+          certificationsResponse.documents.map((doc: any) => ({
+            $id: doc.$id,
+            name: doc.name,
+            provider: doc.provider,
+            link: doc.link,
+            is_paid: doc.is_paid,
+            duration: doc.duration,
+            careerPathId: doc.careerPathId,
+          }))
+        );
       } catch (certError) {
         console.warn('Error loading certifications:', certError);
         setCertifications([]);
@@ -238,7 +282,21 @@ const Learning = () => {
             Query.limit(100)
           ]
         );
-        setProjects(projectsResponse.documents as Project[]);
+        setProjects(
+          projectsResponse.documents.map((doc: any) => ({
+            $id: doc.$id,
+            title: doc.title,
+            description: doc.description,
+            difficulty: doc.difficulty,
+            estimatedDuration: doc.estimatedDuration,
+            tools: doc.tools,
+            prerequisites: doc.prerequisites,
+            careerPathId: doc.careerPathId,
+            outcome: doc.outcome,
+            steps: doc.steps,
+            evaluationCriteria: doc.evaluationCriteria,
+          }))
+        );
       } catch (projectError) {
         console.warn('Error loading projects:', projectError);
         setProjects([]);
@@ -291,7 +349,15 @@ const Learning = () => {
             Query.limit(100)
           ]
         );
-        setFreeResources(freeResourcesResponse.documents as FreeResource[]);
+        setFreeResources(
+          freeResourcesResponse.documents.map((doc: any) => ({
+            $id: doc.$id,
+            title: doc.title,
+            type: doc.type,
+            link: doc.link,
+            topicId: doc.topicId,
+          }))
+        );
       } catch (freeResourceError) {
         console.warn('Error loading free resources:', freeResourceError);
         setFreeResources([]);
@@ -308,7 +374,15 @@ const Learning = () => {
               Query.limit(100)
             ]
           );
-          setPremiumResources(premiumResourcesResponse.documents as PremiumResource[]);
+          setPremiumResources(
+            premiumResourcesResponse.documents.map((doc: any) => ({
+              $id: doc.$id,
+              title: doc.title,
+              type: doc.type,
+              link: doc.link,
+              careerPathId: doc.careerPathId,
+            }))
+          );
         } catch (premiumResourceError) {
           console.warn('Error loading premium resources:', premiumResourceError);
           setPremiumResources([]);
@@ -441,6 +515,19 @@ const Learning = () => {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         showsVerticalScrollIndicator={false}
       >
+        <View className="flex-row items-center px-4 pt-4 pb-2">
+          <TouchableOpacity
+            className="p-2 rounded-full bg-gray-50"
+            onPress={() => router.back()}
+            accessibilityLabel="Go back"
+          >
+            <ArrowLeft size={24} color="#333" />
+          </TouchableOpacity>
+          <View className="flex-1 items-center">
+            <Text className="text-lg font-bold text-gray-800">Learning Roadmap and Resources</Text>
+          </View>
+          <View style={{ width: 40 }}>{/* Spacer */}</View>
+        </View>
         <View style={styles.header}>
           {/* Tags */}
           {careerPath.tags && careerPath.tags.length > 0 && (
@@ -586,40 +673,42 @@ const Learning = () => {
           </View>
         )}
 
-        {activeTab === 'projects' && (
-          <View style={styles.tabContent}>
-            {projects.map((project) => (
-              <View key={project.$id} style={styles.projectCard}>
-                <Text style={styles.projectTitle}>{project.title}</Text>
-                <Text style={styles.projectDescription}>{project.description}</Text>
-
-                <View style={styles.projectDetails}>
-                  <Text style={styles.projectDetailLabel}>Difficulty:</Text>
-                  <Text style={styles.projectDetailValue}>{project.difficulty}</Text>
-                </View>
-
-                <View style={styles.projectDetails}>
-                  <Text style={styles.projectDetailLabel}>Duration:</Text>
-                  <Text style={styles.projectDetailValue}>{project.estimatedDuration}</Text>
-                </View>
-
-                {project.tools && project.tools.length > 0 && (
-                  <View style={styles.projectSection}>
-                    <Text style={styles.projectSectionTitle}>Tools:</Text>
-                    <Text style={styles.projectSectionContent}>{project.tools.join(', ')}</Text>
-                  </View>
-                )}
-
-                {project.prerequisites && project.prerequisites.length > 0 && (
-                  <View style={styles.projectSection}>
-                    <Text style={styles.projectSectionTitle}>Prerequisites:</Text>
-                    <Text style={styles.projectSectionContent}>{project.prerequisites.join(', ')}</Text>
-                  </View>
-                )}
+       {activeTab === 'projects' && (
+  <View style={styles.tabContent}>
+    {projects.length === 0 ? (
+      <View style={styles.emptyStateContainer}>
+        <Text style={styles.emptyStateText}>No projects available for this career path yet.</Text>
+      </View>
+    ) : (
+      projects.map((project) => (
+        <TouchableOpacity
+          key={project.$id}
+          style={styles.projectButton}
+          onPress={() => handleProjectClick(project)}
+        >
+          <View style={styles.projectButtonContent}>
+            <Text style={styles.projectButtonTitle}>{project.title}</Text>
+            <Text style={styles.projectButtonSubtitle} numberOfLines={2}>
+              {project.description}
+            </Text>
+            <View style={styles.projectButtonFooter}>
+              <View style={styles.projectButtonDetails}>
+                <Text style={styles.projectButtonDetail}>
+                  📊 {project.difficulty}
+                </Text>
+                <Text style={styles.projectButtonDetail}>
+                  ⏱️ {project.estimatedDuration}
+                </Text>
               </View>
-            ))}
+              <Text style={styles.projectButtonArrow}>→</Text>
+            </View>
           </View>
-        )}
+        </TouchableOpacity>
+      ))
+    )}
+  </View>
+)}
+
       </ScrollView>
 
       {/* Topic Modal */}
@@ -706,6 +795,130 @@ const Learning = () => {
           </ScrollView>
         </View>
       </Modal>
+
+      {/* Project Modal */}
+<Modal
+  animationType="slide"
+  transparent={false}
+  visible={projectModalVisible}
+  onRequestClose={() => setProjectModalVisible(false)}
+>
+  <View style={styles.modalContainer}>
+    <View style={styles.modalHeader}>
+      <TouchableOpacity
+        style={styles.closeButton}
+        onPress={() => setProjectModalVisible(false)}
+      >
+        <Text style={styles.closeButtonText}>✕</Text>
+      </TouchableOpacity>
+    </View>
+
+    <ScrollView style={styles.modalContent}>
+      {selectedProject && (
+        <>
+          <Text style={styles.modalTitle}>{selectedProject.title}</Text>
+          <Text style={styles.modalDescription}>{selectedProject.description}</Text>
+
+          {/* Project Overview Cards */}
+          <View style={styles.overviewCardsContainer}>
+            <View style={styles.overviewCard}>
+              <Text style={styles.overviewCardEmoji}>📊</Text>
+              <Text style={styles.overviewCardLabel}>Difficulty</Text>
+              <Text style={styles.overviewCardValue}>{selectedProject.difficulty}</Text>
+            </View>
+            
+            <View style={styles.overviewCard}>
+              <Text style={styles.overviewCardEmoji}>⏱️</Text>
+              <Text style={styles.overviewCardLabel}>Duration</Text>
+              <Text style={styles.overviewCardValue}>{selectedProject.estimatedDuration}</Text>
+            </View>
+          </View>
+
+          {/* Expected Outcome */}
+          {selectedProject.outcome && (
+            <View style={styles.outcomeSection}>
+              <Text style={styles.outcomeSectionTitle}>🎯 Expected Outcome</Text>
+              <Text style={styles.outcomeSectionText}>{selectedProject.outcome}</Text>
+            </View>
+          )}
+
+          {/* Tools Section */}
+          {selectedProject.tools && selectedProject.tools.length > 0 && (
+            <View style={styles.sectionContainer}>
+              <Text style={styles.sectionTitle}>🛠️ Tools & Technologies</Text>
+              <View style={styles.toolsContainer}>
+                {selectedProject.tools.map((tool, index) => (
+                  <View key={index} style={styles.toolChip}>
+                    <Text style={styles.toolChipText}>{tool}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+
+          {/* Prerequisites Section */}
+          {selectedProject.prerequisites && selectedProject.prerequisites.length > 0 && (
+            <View style={styles.sectionContainer}>
+              <Text style={styles.sectionTitle}>📋 Prerequisites</Text>
+              <View style={styles.listContainer}>
+                {selectedProject.prerequisites.map((prerequisite, index) => (
+                  <View key={index} style={styles.listItem}>
+                    <Text style={styles.listItemBullet}>•</Text>
+                    <Text style={styles.listItemText}>{prerequisite}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+
+          {/* Steps Section */}
+          {selectedProject.steps && selectedProject.steps.length > 0 && (
+            <View style={styles.sectionContainer}>
+              <Text style={styles.sectionTitle}>📝 Project Steps</Text>
+              <View style={styles.stepsContainer}>
+                {selectedProject.steps.map((step, index) => (
+                  <View key={index} style={styles.stepItem}>
+                    <View style={styles.stepNumber}>
+                      <Text style={styles.stepNumberText}>{index + 1}</Text>
+                    </View>
+                    <Text style={styles.stepText}>{step}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+
+          {/* Evaluation Criteria Section */}
+          {selectedProject.evaluationCriteria && selectedProject.evaluationCriteria.length > 0 && (
+            <View style={styles.sectionContainer}>
+              <Text style={styles.sectionTitle}>✅ Evaluation Criteria</Text>
+              <View style={styles.listContainer}>
+                {selectedProject.evaluationCriteria.map((criteria, index) => (
+                  <View key={index} style={styles.listItem}>
+                    <Text style={styles.listItemBullet}>•</Text>
+                    <Text style={styles.listItemText}>{criteria}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+
+          {/* Action Button */}
+          <TouchableOpacity
+            style={styles.startProjectButton}
+            onPress={() => {
+              setProjectModalVisible(false);
+              // Add your project start logic here
+              Alert.alert('Project Started', 'Good luck with your project!');
+            }}
+          >
+            <Text style={styles.startProjectButtonText}>🚀 Start This Project</Text>
+          </TouchableOpacity>
+        </>
+      )}
+    </ScrollView>
+  </View>
+</Modal>
     </View>
   );
 };
@@ -987,15 +1200,7 @@ const styles = StyleSheet.create({
     color: '#333',
     flex: 1,
   },
-  projectSection: {
-    marginTop: 12,
-  },
-  projectSectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#5badec',
-    marginBottom: 4,
-  },
+  // projectSection and projectSectionTitle definitions intentionally omitted to avoid duplicates
   projectSectionContent: {
     fontSize: 16,
     color: '#333',
@@ -1102,6 +1307,219 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
+   projectButton: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  projectButtonContent: {
+    flex: 1,
+  },
+  projectButtonTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 8,
+  },
+  projectButtonSubtitle: {
+    fontSize: 14,
+    color: '#666',
+    lineHeight: 20,
+    marginBottom: 12,
+  },
+  projectButtonFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  projectButtonDetails: {
+    flexDirection: 'row',
+    gap: 16,
+  },
+  projectButtonDetail: {
+    fontSize: 12,
+    color: '#5badec',
+    fontWeight: '600',
+  },
+  projectButtonArrow: {
+    fontSize: 18,
+    color: '#5badec',
+    fontWeight: 'bold',
+  },
+  emptyStateContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 40,
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  emptyStateText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+  },
+  
+  // Project modal styles
+  projectDetailsGrid: {
+    backgroundColor: '#f8f9fa',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 24,
+  },
+  projectDetailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  // projectSection and projectSectionTitle definitions intentionally omitted to avoid duplicates
+  toolsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  toolChip: {
+    backgroundColor: '#e3f2fd',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  toolChipText: {
+    color: '#5badec',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  listItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 8,
+  },
+  listItemBullet: {
+    fontSize: 16,
+    color: '#5badec',
+    marginRight: 8,
+    marginTop: 2,
+  },
+  listItemText: {
+    fontSize: 16,
+    color: '#333',
+    flex: 1,
+    lineHeight: 22,
+  },
+  stepItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 16,
+  },
+  stepNumber: {
+    backgroundColor: '#5badec',
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+    marginTop: 2,
+  },
+  stepNumberText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  stepText: {
+    fontSize: 16,
+    color: '#333',
+    flex: 1,
+    lineHeight: 22,
+  },
+  startProjectButton: {
+    backgroundColor: '#5badec',
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    marginTop: 24,
+    marginBottom: 32,
+  },
+  startProjectButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+   overviewCardsContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 20,
+  },
+  overviewCard: {
+    flex: 1,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e8e8e8',
+  },
+  overviewCardEmoji: {
+    fontSize: 24,
+    marginBottom: 6,
+  },
+  overviewCardLabel: {
+    fontSize: 12,
+    color: '#666',
+    marginBottom: 4,
+    textTransform: 'uppercase',
+    fontWeight: '600',
+  },
+  overviewCardValue: {
+    fontSize: 16,
+    color: '#333',
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  outcomeSection: {
+    backgroundColor: '#f0f8ff',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
+  },
+  outcomeSectionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 8,
+  },
+  outcomeSectionText: {
+    fontSize: 15,
+    color: '#555',
+    lineHeight: 22,
+  },
+  sectionContainer: {
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 12,
+  },
+  listContainer: {
+    gap: 8,
+  },
+  stepsContainer: {
+    gap: 12,
+  },
+
+  
 });
 
 export default Learning;
