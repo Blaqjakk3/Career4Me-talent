@@ -1,45 +1,48 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
-import { Platform } from 'react-native';
+import { View, Text } from 'react-native'
+import { Tabs, Redirect } from 'expo-router'
+import { LayoutDashboard, User } from 'lucide-react-native'
 
-import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import TabBarBackground from '@/components/ui/TabBarBackground';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
-
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
+const TLayout = () => {
   return (
-    <Tabs
+    <>
+      <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
-        tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            // Use a transparent background on iOS to show the blur effect
-            position: 'absolute',
-          },
-          default: {},
-        }),
-      }}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
-        }}
-      />
-    </Tabs>
-  );
+        tabBarShowLabel: true,
+        tabBarInactiveTintColor: '#555',
+        tabBarActiveTintColor: '#5badec',
+        tabBarStyle: {
+          borderTopWidth: 1,
+          height: 50,
+        }
+      }}
+      >
+        <Tabs.Screen 
+          name="dashboard"
+          options={{
+            title: 'Dashboard',
+            headerShown:false,
+            tabBarIcon: ({ color, focused }) => (
+              <View style={{ alignItems: 'center' }}>
+                <LayoutDashboard color={focused ? '#5badec' : '#222'} />
+              </View>
+            )
+          }} 
+        />
+         <Tabs.Screen 
+          name="profile"
+          options={{
+            title: 'Profile',
+            headerShown:false,
+            tabBarIcon: ({ color, focused }) => (
+              <View style={{ alignItems: 'center' }}>
+                <User color={focused ? '#5badec' : '#222'} />
+              </View>
+            )
+          }} 
+        />
+      </Tabs>
+    </>
+  )
 }
+
+export default TLayout
