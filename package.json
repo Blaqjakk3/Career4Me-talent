@@ -1,5 +1,4 @@
 {
-  "type": "module",
   "name": "career4me_talent",
   "main": "expo-router/entry",
   "version": "1.0.0",
