@@ -7,11 +7,8 @@ import {
   Image,
   TextInput,
   ActivityIndicator,
-  Animated,
-  ScrollView,
-  Dimensions
 } from 'react-native'
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   ArrowLeft,
   Search,
@@ -21,7 +18,8 @@ import {
   Award,
   ChevronDown,
   ChevronRight,
-  BookmarkCheck
+  BookmarkCheck,
+  Briefcase
 } from 'lucide-react-native'
 import { router } from 'expo-router'
 import {
@@ -32,7 +30,7 @@ import {
 } from '../../lib/appwrite'
 import debounce from 'lodash/debounce'
 
-// Define types
+// Types
 type Job = {
   $id: string
   name: string
@@ -50,7 +48,7 @@ type Job = {
   responsibilities?: string
   industry?: string
   dateofUpload?: string
-  viewers?: string[] // New attribute for tracking unique viewers
+  viewers?: string[]
 }
 
 type Employer = {
@@ -73,8 +71,6 @@ type User = {
   interestedFields?: string[]
 }
 
-type TabType = 'selected' | 'saved'
-
 type SavedPathSection = {
   pathId: string
   pathTitle: string
@@ -82,177 +78,38 @@ type SavedPathSection = {
   isExpanded: boolean
 }
 
-// Enhanced job matching logic (same as original)
+// Job matching logic
 const getIntelligentJobMatches = (userTalent: User, allJobs: Job[], pathTitle: string) => {
-  if (!userTalent.careerStage) {
-    return allJobs
-  }
+  if (!userTalent.careerStage) return allJobs
 
-  let filteredJobs: Job[] = []
-
-  switch (userTalent.careerStage) {
-    case 'Pathfinder':
-      filteredJobs = getPathfinderMatches(allJobs, pathTitle)
-      break
-    case 'Trailblazer':
-      filteredJobs = getTrailblazerMatches(userTalent, allJobs, pathTitle)
-      break
-    case 'Horizon Changer':
-      filteredJobs = getHorizonChangerMatches(userTalent, allJobs, pathTitle)
-      break
-    default:
-      filteredJobs = allJobs
-  }
-
-  return filteredJobs
-}
-
-const getPathfinderMatches = (jobs: Job[], selectedPathTitle: string) => {
-  const pathfinderJobs = jobs.filter(job => {
-    if (job.seniorityLevel !== 'Entry-Level') return false
-    
-    const isRelatedPath = job.relatedpaths?.some(path => 
-      path.toLowerCase().includes(selectedPathTitle.toLowerCase())
+  const filteredJobs = allJobs.filter(job => {
+    return job.relatedpaths?.some(path => 
+      path.toLowerCase().includes(pathTitle.toLowerCase())
     )
-    
-    return isRelatedPath
   })
 
-  return pathfinderJobs.sort((a, b) => {
+  return filteredJobs.sort((a, b) => {
+    // Simple sorting by job type priority and date
     const getJobTypePriority = (jobType: string) => {
-      switch (jobType) {
-        case 'Internship': return 1
-        case 'Contract': return 2
-        case 'Full Time': return 3
-        case 'Part Time': return 4
-        default: return 5
-      }
+      const priorities = { 'Internship': 1, 'Contract': 2, 'Full Time': 3, 'Part Time': 4 }
+      return priorities[jobType] || 5
     }
 
-    const priorityA = getJobTypePriority(a.jobtype)
-    const priorityB = getJobTypePriority(b.jobtype)
-    
-    if (priorityA !== priorityB) {
-      return priorityA - priorityB
+    const priorityDiff = getJobTypePriority(a.jobtype) - getJobTypePriority(b.jobtype)
+    if (priorityDiff !== 0) return priorityDiff
+
+    // Sort by upload date if available
+    if (a.dateofUpload && b.dateofUpload) {
+      return new Date(b.dateofUpload).getTime() - new Date(a.dateofUpload).getTime()
     }
 
-    const hasDescriptionA = (a.description && a.description.length > 100) || 
-                           (a.responsibilities && a.responsibilities.length > 100)
-    const hasDescriptionB = (b.description && b.description.length > 100) || 
-                           (b.responsibilities && b.responsibilities.length > 100)
-    
-    if (hasDescriptionA && !hasDescriptionB) return -1
-    if (!hasDescriptionA && hasDescriptionB) return 1
-    
-    return 0
-  })
-}
-
-const getTrailblazerMatches = (userTalent: User, jobs: Job[], selectedPathTitle: string) => {
-  const trailblazerJobs = jobs.filter(job => {
-    if (job.jobtype === 'Internship') return false
-    
-    const isRelatedPath = job.relatedpaths?.some(path => 
-      path.toLowerCase().includes(selectedPathTitle.toLowerCase())
-    )
-    
-    if (!isRelatedPath) return false
-
-    const userSeniority = userTalent.currentSeniorityLevel
-    if (!userSeniority) return true
-
-    if (job.seniorityLevel === userSeniority) return true
-    
-    if (userSeniority === 'Entry-Level' && job.seniorityLevel === 'Mid-Level') return true
-    if (userSeniority === 'Mid-Level' && job.seniorityLevel === 'Senior-Level') return true
-    
-    return false
-  })
-
-  return trailblazerJobs.sort((a, b) => {
-    const getTrailblazerScore = (job: Job) => {
-      let score = 0
-      const userSeniority = userTalent.currentSeniorityLevel
-
-      if (job.jobtype === 'Full Time') score += 100
-      else if (job.jobtype === 'Contract') score += 70
-      else if (job.jobtype === 'Part Time') score += 50
-
-      if (job.seniorityLevel === userSeniority) {
-        score += 50
-      } else if (
-        (userSeniority === 'Entry-Level' && job.seniorityLevel === 'Mid-Level') ||
-        (userSeniority === 'Mid-Level' && job.seniorityLevel === 'Senior-Level')
-      ) {
-        score += 30
-      }
-
-      return score
-    }
-
-    return getTrailblazerScore(b) - getTrailblazerScore(a)
-  })
-}
-
-const getHorizonChangerMatches = (userTalent: User, jobs: Job[], selectedPathTitle: string) => {
-  const horizonChangerJobs = jobs.filter(job => {
-    if (job.jobtype === 'Internship') return false
-    
-    if (userTalent.interestedFields && userTalent.interestedFields.length > 0) {
-      const isInInterestedField = userTalent.interestedFields.some(field =>
-        job.relatedpaths?.some(path => 
-          path.toLowerCase().includes(field.toLowerCase())
-        ) || job.industry?.toLowerCase().includes(field.toLowerCase())
-      )
-      
-      if (isInInterestedField) {
-        return job.seniorityLevel === 'Entry-Level' || job.seniorityLevel === 'Mid-Level'
-      }
-    }
-    
-    const isRelatedPath = job.relatedpaths?.some(path => 
-      path.toLowerCase().includes(selectedPathTitle.toLowerCase())
-    )
-    
-    return isRelatedPath
-  })
-
-  return horizonChangerJobs.sort((a, b) => {
-    const getHorizonChangerScore = (job: Job) => {
-      let score = 0
-      
-      if (userTalent.interestedFields && userTalent.interestedFields.length > 0) {
-        const isInInterestedField = userTalent.interestedFields.some(field =>
-          job.relatedpaths?.some(path => 
-            path.toLowerCase().includes(field.toLowerCase())
-          ) || job.industry?.toLowerCase().includes(field.toLowerCase())
-        )
-        
-        if (isInInterestedField) score += 100
-      }
-
-      if (job.seniorityLevel === 'Entry-Level') {
-        score += 80
-      } else if (job.seniorityLevel === 'Mid-Level') {
-        score += 60
-      } else if (job.seniorityLevel === 'Senior-Level') {
-        score += 40
-      }
-
-      if (job.jobtype === 'Full Time') score += 30
-      else if (job.jobtype === 'Contract') score += 20
-      else if (job.jobtype === 'Part Time') score += 10
-
-      return score
-    }
-
-    return getHorizonChangerScore(b) - getHorizonChangerScore(a)
+    return (b.numViews || 0) - (a.numViews || 0)
   })
 }
 
 const Jobs = () => {
   const [loading, setLoading] = useState<boolean>(true)
-  const [activeTab, setActiveTab] = useState<TabType>('selected')
+  const [activeTab, setActiveTab] = useState<'selected' | 'saved'>('selected')
   const [selectedPathJobs, setSelectedPathJobs] = useState<Job[]>([])
   const [savedPathSections, setSavedPathSections] = useState<SavedPathSection[]>([])
   const [filteredSelectedJobs, setFilteredSelectedJobs] = useState<Job[]>([])
@@ -261,28 +118,19 @@ const Jobs = () => {
   const [selectedPathTitle, setSelectedPathTitle] = useState<string>('')
   const [user, setUser] = useState<User | null>(null)
   const [savedPathsLoaded, setSavedPathsLoaded] = useState<boolean>(false)
-  const [tabContainerWidth, setTabContainerWidth] = useState<number>(0)
-  const [viewedJobs, setViewedJobs] = useState<Set<string>>(new Set()) // Track jobs viewed in this session
-
-  const tabAnimation = useRef(new Animated.Value(0)).current
+  const [viewedJobs, setViewedJobs] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     fetchSelectedPathJobs()
   }, [])
 
-  // New function to handle job view tracking
+  // Job view tracking
   const trackJobView = async (job: Job, userId: string) => {
     try {
-      // Check if user has already viewed this job
       const currentViewers = job.viewers || []
-      const hasUserViewed = currentViewers.includes(userId)
-      
-      // If user hasn't viewed this job before, add them to viewers
-      if (!hasUserViewed) {
+      if (!currentViewers.includes(userId)) {
         const updatedViewers = [...currentViewers, userId]
-        
-        // Update the job document with new viewer and updated view count
-        const updatedJob = await databases.updateDocument<Job>(
+        await databases.updateDocument<Job>(
           config.databaseId,
           config.jobsCollectionId,
           job.$id,
@@ -291,34 +139,19 @@ const Jobs = () => {
             numViews: updatedViewers.length
           }
         )
-        
-        return updatedJob
       }
-      
-      return job // Return original job if already viewed
     } catch (error) {
       console.error('Error tracking job view:', error)
-      return job
     }
   }
 
-  // Function to batch track job views for multiple jobs
   const batchTrackJobViews = async (jobs: Job[], userId: string) => {
-    const updatedJobs: Job[] = []
-    
     for (const job of jobs) {
-      // Only track view if not already viewed in this session
       if (!viewedJobs.has(job.$id)) {
-        const updatedJob = await trackJobView(job, userId)
-        updatedJobs.push(updatedJob)
-        // Mark as viewed in this session to avoid duplicate tracking
+        await trackJobView(job, userId)
         setViewedJobs(prev => new Set(prev).add(job.$id))
-      } else {
-        updatedJobs.push(job)
       }
     }
-    
-    return updatedJobs
   }
 
   const fetchSelectedPathJobs = async () => {
@@ -354,13 +187,11 @@ const Jobs = () => {
 
       if (jobsData.documents.length > 0) {
         await fetchEmployersData(jobsData.documents)
-
-        // Track views for all jobs displayed to the user
-        const updatedJobs = await batchTrackJobViews(jobsData.documents, currentUser.$id)
+        await batchTrackJobViews(jobsData.documents, currentUser.$id)
 
         const intelligentlyMatchedJobs = getIntelligentJobMatches(
           currentUser, 
-          updatedJobs, 
+          jobsData.documents, 
           selectedPath.title
         )
 
@@ -376,12 +207,10 @@ const Jobs = () => {
   }
 
   const fetchSavedPathsJobs = async () => {
-    if (!user?.savedPaths || user.savedPaths.length === 0 || savedPathsLoaded) {
-      return;
-    }
+    if (!user?.savedPaths || user.savedPaths.length === 0 || savedPathsLoaded) return
 
     try {
-      const savedPathSections: SavedPathSection[] = [];
+      const savedPathSections: SavedPathSection[] = []
 
       for (const savedPathId of user.savedPaths) {
         try {
@@ -389,51 +218,41 @@ const Jobs = () => {
             config.databaseId,
             config.careerPathsCollectionId,
             savedPathId
-          );
+          )
 
           if (savedPath) {
             const jobsData = await databases.listDocuments<Job>(
               config.databaseId,
               config.jobsCollectionId,
               [Query.search('relatedpaths', savedPath.title), Query.limit(50)]
-            );
+            )
 
-            // Always create a section for the saved path, even if there are no jobs
             const intelligentlyMatchedJobs = jobsData.documents.length > 0
               ? getIntelligentJobMatches(user, jobsData.documents, savedPath.title)
-              : [];
+              : []
 
-            // Add employer data if there are jobs
             if (jobsData.documents.length > 0) {
-              await fetchEmployersData(jobsData.documents);
+              await fetchEmployersData(jobsData.documents)
             }
 
-            // Sort jobs if there are any and get top 3
-            const sortedJobs = intelligentlyMatchedJobs
-              .sort((a, b) => {
-                if (a.dateofUpload && b.dateofUpload) {
-                  return new Date(b.dateofUpload).getTime() - new Date(a.dateofUpload).getTime();
-                }
-                return (b.numViews || 0) - (a.numViews || 0);
-              })
-              .slice(0, 3);
+            const sortedJobs = intelligentlyMatchedJobs.slice(0, 3)
 
             savedPathSections.push({
               pathId: savedPathId,
               pathTitle: savedPath.title,
               jobs: sortedJobs,
               isExpanded: false
-            });
+            })
           }
         } catch (pathError) {
-          console.error(`Error fetching saved path ${savedPathId}:`, pathError);
+          console.error(`Error fetching saved path ${savedPathId}:`, pathError)
         }
       }
 
-      setSavedPathSections(savedPathSections);
-      setSavedPathsLoaded(true);
+      setSavedPathSections(savedPathSections)
+      setSavedPathsLoaded(true)
     } catch (error) {
-      console.error('Error fetching saved paths jobs:', error);
+      console.error('Error fetching saved paths jobs:', error)
     }
   }
 
@@ -458,24 +277,12 @@ const Jobs = () => {
     }
   }
 
-  const handleTabSwitch = (tab: TabType) => {
+  const handleTabSwitch = (tab: 'selected' | 'saved') => {
     if (tab === activeTab) return
-
     setActiveTab(tab)
-    
-    // Animate tab indicator
-    Animated.timing(tabAnimation, {
-      toValue: tab === 'selected' ? 0 : 1,
-      duration: 200,
-      useNativeDriver: false,
-    }).start()
-
-    // Lazy load saved paths when switching to saved tab
     if (tab === 'saved') {
       fetchSavedPathsJobs()
     }
-
-    // Clear search when switching tabs
     setSearchQuery('')
   }
 
@@ -483,7 +290,6 @@ const Jobs = () => {
     const section = savedPathSections.find(s => s.pathId === pathId)
     const isExpanding = section && !section.isExpanded
     
-    // Update the expanded state
     setSavedPathSections(prev =>
       prev.map(section =>
         section.pathId === pathId
@@ -492,22 +298,8 @@ const Jobs = () => {
       )
     )
 
-    // Track views when section is expanded (jobs become visible)
     if (isExpanding && section && section.jobs.length > 0 && user) {
-      try {
-        const updatedJobs = await batchTrackJobViews(section.jobs, user.$id)
-        
-        // Update the section with the updated jobs (with new view counts)
-        setSavedPathSections(prev =>
-          prev.map(s =>
-            s.pathId === pathId
-              ? { ...s, jobs: updatedJobs }
-              : s
-          )
-        )
-      } catch (error) {
-        console.error('Error tracking views for expanded section:', error)
-      }
+      await batchTrackJobViews(section.jobs, user.$id)
     }
   }
 
@@ -523,13 +315,11 @@ const Jobs = () => {
         const nameMatch = job.name?.toLowerCase().includes(query)
         const employerMatch = employers[job.employer]?.name?.toLowerCase().includes(query)
         const skillsMatch = job.skills?.some(skill => skill.toLowerCase().includes(query))
-
         return nameMatch || employerMatch || skillsMatch
       })
 
       setFilteredSelectedJobs(filtered)
     }
-    // Note: Search is not implemented for saved paths as per requirements
   }, 300)
 
   const onSearchChange = (text: string) => {
@@ -541,105 +331,209 @@ const Jobs = () => {
     router.push(`/jobs/jobsdetails/${jobId}`)
   }
 
-  const renderJobItem = ({ item }: { item: Job }) => {
-    const employer = employers[item.employer] || {}
-
-    return (
-      <TouchableOpacity
-        style={{
-          backgroundColor: 'white',
-          borderRadius: 12,
-          padding: 16,
-          marginBottom: 12,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.1,
-          shadowRadius: 4,
-          elevation: 2
-        }}
-        onPress={() => navigateToJobDetails(item.$id)}
-      >
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
-          <Image
-            source={{ uri: employer.avatar || 'https://via.placeholder.com/40' }}
-            style={{ width: 40, height: 40, borderRadius: 20 }}
-          />
-          <View style={{ marginLeft: 12, flex: 1 }}>
-            <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#1f2937' }}>
-              {item.name}
-            </Text>
-            <Text style={{ fontSize: 14, color: '#6b7280' }}>
-              {employer.name}
-            </Text>
-          </View>
-        </View>
-
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-          <MapPin size={16} color="#6b7280" />
-          <Text style={{ marginLeft: 6, fontSize: 14, color: '#6b7280' }}>
-            {item.location}
-          </Text>
-        </View>
-
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-          <InfoPill icon={<Clock size={14} color="#6b7280" />} text={item.jobtype} />
-          <InfoPill icon={<Building2 size={14} color="#6b7280" />} text={item.workenvironment} />
-          <InfoPill icon={<Award size={14} color="#6b7280" />} text={item.seniorityLevel} />
-        </View>
-      </TouchableOpacity>
-    )
+  // Components
+  const InfoPill = ({ icon, text, variant = 'primary' }: { 
+  icon: React.ReactNode; 
+  text: string;
+  variant?: 'primary' | 'secondary' | 'accent';
+}) => {
+  const getColors = () => {
+    switch (variant) {
+      case 'secondary': return { bg: '#10b981', text: 'white' }
+      case 'accent': return { bg: '#f59e0b', text: 'white' }
+      default: return { bg: '#5badec', text: 'white' }
+    }
   }
 
-  const renderSavedPathSection = ({ item }: { item: SavedPathSection }) => (
+  const colors = getColors()
+
+  return (
+    <View style={{
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: colors.bg,
+      borderRadius: 12,
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      marginRight: 4,
+      marginBottom: 4,
+      shadowColor: colors.bg,
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.2,
+      shadowRadius: 2,
+      elevation: 2,
+    }}>
+      {icon}
+      <Text style={{ 
+        marginLeft: 3, 
+        fontSize: 11, 
+        color: colors.text,
+        fontWeight: '600'
+      }}>{text}</Text>
+    </View>
+  )
+}
+
+ const JobCard = ({ item }: { item: Job }) => {
+  const employer = employers[item.employer] || {}
+
+  return (
+    <TouchableOpacity
+      style={{
+        backgroundColor: 'white',
+        borderRadius: 12,
+        padding: 12,
+        marginBottom: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.06,
+        shadowRadius: 8,
+        elevation: 3,
+        borderLeftWidth: 3,
+        borderLeftColor: '#5badec',
+      }}
+      onPress={() => navigateToJobDetails(item.$id)}
+    >
+      {/* Header with company logo and job title */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+        <Image
+          source={{ uri: employer.avatar || 'https://via.placeholder.com/40' }}
+          style={{ 
+            width: 40, 
+            height: 40, 
+            borderRadius: 8,
+            borderWidth: 1,
+            borderColor: '#f3f4f6'
+          }}
+        />
+        <View style={{ marginLeft: 10, flex: 1 }}>
+          <Text style={{ 
+            fontSize: 16, 
+            fontWeight: '700', 
+            color: '#111827',
+            marginBottom: 2
+          }}>
+            {item.name}
+          </Text>
+          <Text style={{ fontSize: 13, color: '#5badec', fontWeight: '600' }}>
+            {employer.name}
+          </Text>
+        </View>
+      </View>
+
+      {/* Location */}
+      <View style={{ 
+        flexDirection: 'row', 
+        alignItems: 'center', 
+        marginBottom: 10,
+        backgroundColor: '#f8fafc',
+        borderRadius: 8,
+        paddingHorizontal: 8,
+        paddingVertical: 4
+      }}>
+        <MapPin size={14} color="#6b7280" />
+        <Text style={{ 
+          marginLeft: 6, 
+          fontSize: 13, 
+          color: '#6b7280',
+          fontWeight: '500'
+        }}>
+          {item.location}
+        </Text>
+      </View>
+
+      {/* Job details pills - more compact */}
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 4 }}>
+        <InfoPill 
+          icon={<Clock size={12} color="white" />} 
+          text={item.jobtype} 
+          variant="primary"
+        />
+        <InfoPill 
+          icon={<Building2 size={12} color="white" />} 
+          text={item.workenvironment}
+          variant="secondary"
+        />
+        <InfoPill 
+          icon={<Award size={12} color="white" />} 
+          text={item.seniorityLevel}
+          variant="accent"
+        />
+        {item.industry && (
+          <InfoPill 
+            icon={<Briefcase size={12} color="white" />} 
+            text={item.industry}
+            variant="primary"
+          />
+        )}
+      </View>
+    </TouchableOpacity>
+  )
+}
+
+
+  const SavedPathSection = ({ item }: { item: SavedPathSection }) => (
     <View style={{ marginBottom: 16 }}>
       <TouchableOpacity
         style={{
           backgroundColor: 'white',
-          borderRadius: 12,
-          padding: 16,
+          borderRadius: 16,
+          padding: 20,
           shadowColor: '#000',
-          shadowOffset: { width: 0, height: 1 },
+          shadowOffset: { width: 0, height: 2 },
           shadowOpacity: 0.05,
-          shadowRadius: 2,
-          elevation: 1,
+          shadowRadius: 8,
+          elevation: 2,
           flexDirection: 'row',
           alignItems: 'center',
-          justifyContent: 'space-between'
+          justifyContent: 'space-between',
+          borderLeftWidth: 4,
+          borderLeftColor: '#5badec',
         }}
         onPress={() => toggleSavedPathSection(item.pathId)}
       >
         <View style={{ flex: 1 }}>
-          <Text style={{ fontSize: 16, fontWeight: '600', color: '#1f2937' }}>
+          <Text style={{ 
+            fontSize: 18, 
+            fontWeight: '700', 
+            color: '#111827',
+            marginBottom: 4
+          }}>
             {item.pathTitle}
           </Text>
-          <Text style={{ fontSize: 14, color: '#6b7280', marginTop: 2 }}>
+          <Text style={{ fontSize: 14, color: '#6b7280', fontWeight: '500' }}>
             {item.jobs.length} job{item.jobs.length !== 1 ? 's' : ''} available
           </Text>
         </View>
         {item.isExpanded ? (
-          <ChevronDown size={20} color="#6b7280" />
+          <ChevronDown size={24} color="#5badec" />
         ) : (
-          <ChevronRight size={20} color="#6b7280" />
+          <ChevronRight size={24} color="#5badec" />
         )}
       </TouchableOpacity>
 
       {item.isExpanded && (
-        <View style={{ marginTop: 12 }}>
+        <View style={{ marginTop: 16 }}>
           {item.jobs.length > 0 ? (
-            item.jobs.map((job, index) => (
-              <View key={job.$id} style={{ marginBottom: index === item.jobs.length - 1 ? 0 : 12 }}>
-                {renderJobItem({ item: job })}
+            item.jobs.map((job) => (
+              <View key={job.$id}>
+                <JobCard item={job} />
               </View>
             ))
           ) : (
             <View style={{ 
               backgroundColor: 'white',
-              borderRadius: 12,
-              padding: 16,
-              alignItems: 'center'
+              borderRadius: 16,
+              padding: 24,
+              alignItems: 'center',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.05,
+              shadowRadius: 8,
+              elevation: 2,
             }}>
-              <Text style={{ fontSize: 14, color: '#6b7280', textAlign: 'center' }}>
-                There are no available jobs for you in this path
+              <Text style={{ fontSize: 16, color: '#6b7280', textAlign: 'center' }}>
+                No available jobs for this path
               </Text>
             </View>
           )}
@@ -648,20 +542,32 @@ const Jobs = () => {
     </View>
   )
 
-  const InfoPill = ({ icon, text }: { icon: React.ReactNode; text: string }) => (
-    <View style={{
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: '#f3f4f6',
-      borderRadius: 16,
-      paddingHorizontal: 8,
-      paddingVertical: 4,
-      marginRight: 8,
-      marginBottom: 8
-    }}>
-      {icon}
-      <Text style={{ marginLeft: 4, fontSize: 12, color: '#6b7280' }}>{text}</Text>
-    </View>
+  const TabButton = ({ title, count, isActive, onPress }: {
+    title: string;
+    count: number;
+    isActive: boolean;
+    onPress: () => void;
+  }) => (
+    <TouchableOpacity
+      style={{
+        flex: 1,
+        paddingVertical: 16,
+        paddingHorizontal: 20,
+        borderRadius: 12,
+        alignItems: 'center',
+        backgroundColor: isActive ? '#5badec' : 'transparent',
+        marginHorizontal: 4,
+      }}
+      onPress={onPress}
+    >
+      <Text style={{
+        fontSize: 15,
+        fontWeight: '700',
+        color: isActive ? 'white' : '#6b7280'
+      }}>
+        {title} ({count})
+      </Text>
+    </TouchableOpacity>
   )
 
   const getSelectedJobsCount = () => filteredSelectedJobs.length
@@ -670,194 +576,204 @@ const Jobs = () => {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f9fafb' }}>
       {/* Header */}
-      <View style={{ padding: 12, backgroundColor: '#f9fafb' }}>
-        <View style={{ 
-          flexDirection: 'row', 
-          alignItems: 'center', 
-          marginBottom: 16,
-          justifyContent: 'space-between'
-        }}>
-          <TouchableOpacity
-            style={{ padding: 6, borderRadius: 9999, backgroundColor: '#f9fafb' }}
-            onPress={() => router.back()}
-            accessibilityLabel="Go back"
-          >
-            <ArrowLeft size={22} color="#333" />
-          </TouchableOpacity>
-          <Text style={{ 
-            fontSize: 17, 
-            fontWeight: 'bold', 
-            color: '#1f2937',
-            flex: 1,
-            textAlign: 'center'
-          }}>
-            Job Opportunities
-          </Text>
-          <TouchableOpacity
-            style={{ 
-              padding: 6, 
-              borderRadius: 9999, 
-              backgroundColor: '#f9fafb'
-            }}
-            onPress={() => router.push('/jobs/savedjobs')}
-            accessibilityLabel="View saved jobs"
-          >
-            <BookmarkCheck size={22} color="#4f46e5" />
-          </TouchableOpacity>
-        </View>
-
-        {/* Tab Navigation */}
-        <View 
-          style={{
-            backgroundColor: 'white',
+      <View style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 20,
+        paddingVertical: 16,
+        backgroundColor: 'white',
+        borderBottomWidth: 1,
+        borderBottomColor: '#f3f4f6',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 8,
+        elevation: 2,
+      }}>
+        <TouchableOpacity
+          style={{ 
+            padding: 8, 
             borderRadius: 12,
-            padding: 4,
-            flexDirection: 'row',
-            marginBottom: 16,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 1 },
-            shadowOpacity: 0.05,
-            shadowRadius: 2,
-            elevation: 1,
-            position: 'relative'
+            backgroundColor: '#f9fafb'
           }}
-          onLayout={(event) => {
-            const { width } = event.nativeEvent.layout
-            setTabContainerWidth(width)
-          }}
+          onPress={() => router.back()}
         >
-          {/* Tab Indicator */}
-          <Animated.View
-            style={{
-              position: 'absolute',
-              top: 4,
-              bottom: 4,
-              width: tabContainerWidth > 0 ? (tabContainerWidth - 8) / 2 : 0,
-              left: tabAnimation.interpolate({
-                inputRange: [0, 1],
-                outputRange: [4, tabContainerWidth > 0 ? (tabContainerWidth / 2) : 0]
-              }),
-              backgroundColor: '#4f46e5',
-              borderRadius: 8,
-            }}
-          />
-
-          <TouchableOpacity
-            style={{
-              flex: 1,
-              paddingVertical: 12,
-              paddingHorizontal: 16,
-              borderRadius: 8,
-              alignItems: 'center',
-              zIndex: 1
-            }}
-            onPress={() => handleTabSwitch('selected')}
-          >
-            <Text style={{
-              fontSize: 14,
-              fontWeight: '600',
-              color: activeTab === 'selected' ? 'white' : '#6b7280'
-            }}>
-              {selectedPathTitle || 'Selected Path'} ({getSelectedJobsCount()})
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={{
-              flex: 1,
-              paddingVertical: 12,
-              paddingHorizontal: 16,
-              borderRadius: 8,
-              alignItems: 'center',
-              zIndex: 1
-            }}
-            onPress={() => handleTabSwitch('saved')}
-          >
-            <Text style={{
-              fontSize: 14,
-              fontWeight: '600',
-              color: activeTab === 'saved' ? 'white' : '#6b7280'
-            }}>
-              Saved Paths ({getSavedJobsCount()})
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Search Bar (only for selected path) */}
-        {activeTab === 'selected' && (
-          <View style={{
-            backgroundColor: 'white',
-            borderRadius: 8,
-            flexDirection: 'row',
-            alignItems: 'center',
-            paddingHorizontal: 12,
-            marginBottom: 16,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 1 },
-            shadowOpacity: 0.05,
-            shadowRadius: 2,
-            elevation: 1
-          }}>
-            <Search size={20} color="#9ca3af" />
-            <TextInput
-              style={{ flex: 1, paddingVertical: 12, paddingHorizontal: 8, fontSize: 15 }}
-              placeholder="Search by job title, employer, or skills"
-              value={searchQuery}
-              onChangeText={onSearchChange}
-            />
-          </View>
-        )}
+          <ArrowLeft size={22} color="#333" />
+        </TouchableOpacity>
+        <Text style={{
+          fontSize: 18,
+          fontWeight: '700',
+          color: '#1f2937'
+        }}>Job Opportunities</Text>
+        <TouchableOpacity
+          style={{ 
+            padding: 8, 
+            borderRadius: 12,
+            backgroundColor: '#f9fafb'
+          }}
+          onPress={() => router.push('/jobs/savedjobs')}
+        >
+          <BookmarkCheck size={22} color="#5badec" />
+        </TouchableOpacity>
       </View>
+
+      {/* Tab Navigation */}
+      <View style={{
+        backgroundColor: 'white',
+        borderRadius: 16,
+        padding: 6,
+        flexDirection: 'row',
+        margin: 16,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 8,
+        elevation: 2,
+      }}>
+        <TabButton
+          title={selectedPathTitle || 'Selected Path'}
+          count={getSelectedJobsCount()}
+          isActive={activeTab === 'selected'}
+          onPress={() => handleTabSwitch('selected')}
+        />
+        <TabButton
+          title="Saved Paths"
+          count={getSavedJobsCount()}
+          isActive={activeTab === 'saved'}
+          onPress={() => handleTabSwitch('saved')}
+        />
+      </View>
+
+      {/* Search Bar */}
+      {activeTab === 'selected' && (
+        <View style={{
+          backgroundColor: 'white',
+          borderRadius: 16,
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: 16,
+          marginHorizontal: 16,
+          marginBottom: 16,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.05,
+          shadowRadius: 8,
+          elevation: 2,
+        }}>
+          <Search size={20} color="#9ca3af" />
+          <TextInput
+            style={{ flex: 1, paddingVertical: 16, paddingHorizontal: 12, fontSize: 16 }}
+            placeholder="Search by job title, employer, or skills"
+            value={searchQuery}
+            onChangeText={onSearchChange}
+          />
+        </View>
+      )}
 
       {/* Content */}
       {loading ? (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <ActivityIndicator size="large" color="#4f46e5" />
+          <View style={{
+            backgroundColor: 'white',
+            borderRadius: 20,
+            padding: 40,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 8 },
+            shadowOpacity: 0.1,
+            shadowRadius: 20,
+            elevation: 8,
+          }}>
+            <ActivityIndicator size="large" color="#5badec" />
+            <Text style={{
+              marginTop: 16,
+              fontSize: 16,
+              color: '#6b7280',
+              fontWeight: '500'
+            }}>Loading opportunities...</Text>
+          </View>
         </View>
       ) : (
         <View style={{ flex: 1 }}>
           {activeTab === 'selected' ? (
-            // Selected Path Jobs
             filteredSelectedJobs.length === 0 ? (
               <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-                <Text style={{ fontSize: 16, color: '#6b7280', textAlign: 'center' }}>
-                  No job opportunities found matching your selected career path.
-                </Text>
+                <View style={{
+                  backgroundColor: 'white',
+                  borderRadius: 24,
+                  padding: 32,
+                  alignItems: 'center',
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 8 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 20,
+                  elevation: 8,
+                }}>
+                  <View style={{
+                    backgroundColor: '#dbeafe',
+                    borderRadius: 16,
+                    padding: 16,
+                    marginBottom: 16
+                  }}>
+                    <Briefcase size={32} color="#5badec" />
+                  </View>
+                  <Text style={{ fontSize: 18, color: '#111827', fontWeight: '700', textAlign: 'center' }}>
+                    No job opportunities found
+                  </Text>
+                  <Text style={{ fontSize: 14, color: '#6b7280', marginTop: 8, textAlign: 'center' }}>
+                    Try adjusting your search or check back later
+                  </Text>
+                </View>
               </View>
             ) : (
               <FlatList
                 data={filteredSelectedJobs}
-                renderItem={renderJobItem}
+                renderItem={JobCard}
                 keyExtractor={(item) => item.$id}
                 contentContainerStyle={{ padding: 16 }}
                 showsVerticalScrollIndicator={false}
               />
             )
           ) : (
-            // Saved Paths Jobs
             savedPathSections.length === 0 ? (
               <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-                <Text style={{ fontSize: 16, color: '#6b7280', textAlign: 'center' }}>
-                  {user?.savedPaths?.length === 0 
-                    ? "No saved paths yet. Explore career paths to start building your collection!"
-                    : "Loading saved paths..."
-                  }
-                </Text>
+                <View style={{
+                  backgroundColor: 'white',
+                  borderRadius: 24,
+                  padding: 32,
+                  alignItems: 'center',
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 8 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 20,
+                  elevation: 8,
+                }}>
+                  <View style={{
+                    backgroundColor: '#dbeafe',
+                    borderRadius: 16,
+                    padding: 16,
+                    marginBottom: 16
+                  }}>
+                    <BookmarkCheck size={32} color="#5badec" />
+                  </View>
+                  <Text style={{ fontSize: 18, color: '#111827', fontWeight: '700', textAlign: 'center' }}>
+                    {user?.savedPaths?.length === 0 
+                      ? "No saved paths yet"
+                      : "Loading saved paths..."
+                    }
+                  </Text>
+                  <Text style={{ fontSize: 14, color: '#6b7280', marginTop: 8, textAlign: 'center' }}>
+                    Explore career paths to start building your collection!
+                  </Text>
+                </View>
               </View>
             ) : (
               <FlatList
                 data={savedPathSections}
-                renderItem={renderSavedPathSection}
+                renderItem={SavedPathSection}
                 keyExtractor={(item) => item.pathId}
                 contentContainerStyle={{ padding: 16 }}
                 showsVerticalScrollIndicator={false}
-                ListEmptyComponent={() => (
-                  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-                    <Text style={{ fontSize: 16, color: '#6b7280', textAlign: 'center' }}>
-                      No saved paths yet. Explore career paths to start building your collection!
-                    </Text>
-                  </View>
-                )}
               />
             )
           )}
