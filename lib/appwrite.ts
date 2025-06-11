@@ -370,7 +370,108 @@ export const getCareerPathById = async (careerPathId: string) => {
     }
   };
 
+  /**
+   * Saves or unsaves a job for the current user
+   * @param jobId - The ID of the job to save/unsave
+   * @returns Object with success status and updated savedJobs array
+   */
+  export const saveJob = async (jobId: string) => {
+    try {
+      // Get the current user
+      const currentUser = await getCurrentUser();
+      
+      if (!currentUser) {
+        throw new Error("User not authenticated");
+      }
+      
+      // Get the user's existing saved jobs (if any)
+      let savedJobs = currentUser.savedJobs || [];
+      
+      // Check if job is already saved
+      if (savedJobs.includes(jobId)) {
+        // If already saved, remove it (toggle functionality)
+        savedJobs = savedJobs.filter((id: string) => id !== jobId);
+      } else {
+        // If not saved, add it
+        savedJobs.push(jobId);
+      }
+      
+      // Update the user document in the database
+      const updatedUser = await databases.updateDocument(
+        config.databaseId,
+        config.talentsCollectionId,
+        currentUser.$id,
+        {
+          savedJobs: savedJobs
+        }
+      );
+      
+      // Update the local storage with the updated user
+      await AsyncStorage.setItem("user", JSON.stringify(updatedUser));
+      
+      return {
+        success: true,
+        isSaved: savedJobs.includes(jobId),
+        savedJobs
+      };
+    } catch (error: unknown) {
+      console.error("Error saving job:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "An unknown error occurred"
+      };
+    }
+  };
 
+  /**
+   * Checks if a job is currently saved by the user
+   * @param jobId - The ID of the job to check
+   * @returns Boolean indicating if the job is saved
+   */
+  export const isJobSaved = async (jobId: string) => {
+    try {
+      const currentUser = await getCurrentUser();
+      
+      if (!currentUser) {
+        return false;
+      }
+      
+      const savedJobs = currentUser.savedJobs || [];
+      return savedJobs.includes(jobId);
+    } catch (error: unknown) {
+      console.error("Error checking saved job:", error);
+      return false;
+    }
+  };
 
-
-
+  /**
+   * Fetches all saved jobs for the current user
+   * @returns Array of saved job documents
+   */
+  export const getSavedJobs = async () => {
+    try {
+      const currentUser = await getCurrentUser();
+      
+      if (!currentUser) {
+        throw new Error("User not authenticated");
+      }
+      
+      const savedJobIds = currentUser.savedJobs || [];
+      
+      if (savedJobIds.length === 0) {
+        return [];
+      }
+      
+      // Fetch all saved jobs
+      const savedJobs = await databases.listDocuments(
+        config.databaseId,
+        config.jobsCollectionId,
+        [Query.equal("$id", savedJobIds)]
+      );
+      
+      return savedJobs.documents;
+    } catch (error) {
+      console.error("Error fetching saved jobs:", error);
+      return [];
+    }
+  };
