@@ -1,5 +1,5 @@
 import SignIn from "@/app/(auth)/signin";
-import { Client, Databases, Account, ID, Avatars, Query, Storage } from "react-native-appwrite";
+import { Client, Databases, Account, ID, Avatars, Query, Storage, Functions } from "react-native-appwrite";
 import { Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as FileSystem from 'expo-file-system';
@@ -36,6 +36,7 @@ const account = new Account(client);
 const avatars = new Avatars(client);
 const databases = new Databases(client);
 const storage = new Storage(client);
+const functions = new Functions(client);
 
 
 export {
@@ -44,6 +45,7 @@ export {
     databases,
     storage,
     avatars,
+    functions,
     ID,
     Query
   };

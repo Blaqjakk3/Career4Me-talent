@@ -72,6 +72,14 @@ const Dashboard = () => {
       key: 'jobs',
       colors: ['#29C17E', '#006400'],
       href: '/jobs'
+    },
+    { 
+      title: 'Test Information', 
+      icon: <FileText size={26} color="#fff" />,
+      description: 'View all test related information',
+      key: 'test-info',
+      colors: ['#FF6B6B', '#EE0979'],
+      href: '/test-info'
     }
   ];
 
