@@ -27,7 +27,8 @@ import {
   TrendingUp,
   Users,
   Heart,
-  Share
+  Share,
+  FileText
 } from 'lucide-react-native';
 import {
   config,
@@ -37,6 +38,7 @@ import {
   saveJob,
   isJobSaved
 } from '../../../lib/appwrite';
+
 
 // Define types
 type Job = {
@@ -233,6 +235,8 @@ const JobDetails = () => {
       router.push(`/jobs/employer/${job.employer}`);
     }
   };
+
+  
 
   const InfoPill = ({ icon, text, variant = 'primary' }: { 
     icon: React.ReactNode; 
@@ -449,7 +453,7 @@ const JobDetails = () => {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f9fafb' }}>
-      {/* Simplified Header - Removed Save and Share buttons */}
+      {/* Header */}
       <View style={{
         flexDirection: 'row',
         alignItems: 'center',
@@ -572,7 +576,7 @@ const JobDetails = () => {
             </View>
           </View>
 
-          {/* Quick Actions */}
+          {/* Quick Actions - Updated to include Document Analysis */}
           <View style={{ flexDirection: 'row', marginBottom: 20 }}>
             <ActionButton
               onPress={handleApply}

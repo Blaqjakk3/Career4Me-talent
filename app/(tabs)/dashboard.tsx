@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getDailyQuote, getCurrentUser } from '../../lib/appwrite';
 import { useGlobalContext } from '../../context/GlobalProvider';
-import { Compass, BookOpen, FileText, Briefcase, ChevronRight } from 'lucide-react-native';
+import { Compass, BookOpen, FileText, Briefcase, ChevronRight, MessagesSquare } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Link, router } from 'expo-router';
 import { Pressable } from 'react-native';
@@ -72,6 +72,14 @@ const Dashboard = () => {
       key: 'jobs',
       colors: ['#29C17E', '#006400'],
       href: '/jobs'
+    },
+    { 
+      title: 'Interview Prep', 
+      icon: <MessagesSquare size={26} color="#fff" />,
+      description: 'Prepare for your next Interview',
+      key: 'interview-prep',
+      colors: ['#29C17E', '#006400'],
+      href: '/interview-prep'
     },
     { 
       title: 'Test Information', 

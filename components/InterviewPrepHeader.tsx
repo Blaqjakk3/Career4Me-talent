@@ -1,0 +1,73 @@
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { ArrowLeft } from 'lucide-react-native';
+
+interface InterviewPrepHeaderProps {
+  onBackPress: () => void;
+}
+
+const InterviewPrepHeader: React.FC<InterviewPrepHeaderProps> = ({ onBackPress }) => {
+  return (
+    <View style={styles.headerContainer}>
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={onBackPress}
+        accessibilityLabel="Go back"
+        activeOpacity={0.7}
+      >
+        <ArrowLeft size={24} color="#333" />
+      </TouchableOpacity>
+      
+      <View style={styles.titleContainer}>
+        <Text style={styles.title}>Interview Prep</Text>
+      </View>
+      
+      <View style={styles.spacer} />
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  headerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 8,
+    backgroundColor: '#f8f9fa',
+  },
+  backButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  titleContainer: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    marginTop: 2,
+  },
+  spacer: {
+    width: 40,
+  },
+});
+
+export default InterviewPrepHeader;
