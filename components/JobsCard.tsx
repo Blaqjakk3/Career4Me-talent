@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Image } from 'react-native';
-import { MapPin, Briefcase, BarChart } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 // JobCard component to display individual job listings
 const JobCard = ({ job, onPress }) => {
@@ -69,7 +69,7 @@ const JobCard = ({ job, onPress }) => {
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 4 }}>
             {/* Location */}
             <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 12, marginBottom: 4 }}>
-              <MapPin size={14} color="#6b7280" />
+              <Ionicons name="location-outline" size={14} color="#6b7280" />
               <Text style={{ fontSize: 12, color: '#6b7280', marginLeft: 4 }}>
                 {job.location || 'Remote'}
               </Text>
@@ -77,7 +77,7 @@ const JobCard = ({ job, onPress }) => {
 
             {/* Job Type */}
             <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 12, marginBottom: 4 }}>
-              <Briefcase size={14} color="#6b7280" />
+              <Ionicons name="briefcase-outline" size={14} color="#6b7280" />
               <Text style={{ fontSize: 12, color: '#6b7280', marginLeft: 4 }}>
                 {job.jobtype || 'Full-time'}
               </Text>
@@ -85,7 +85,7 @@ const JobCard = ({ job, onPress }) => {
 
             {/* Seniority Level */}
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-              <BarChart size={14} color="#6b7280" />
+              <Ionicons name="bar-chart-outline" size={14} color="#6b7280" />
               <Text style={{ fontSize: 12, color: '#6b7280', marginLeft: 4 }}>
                 {job.senirorityLevel || 'Entry-Level'}
               </Text>

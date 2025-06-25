@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import { BookmarkPlus, Check } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 interface CareerPath {
   $id: string;
@@ -51,7 +51,11 @@ const SurveyCareerCard: React.FC<SurveyCareerCardProps> = ({
           }}
           onPress={() => onToggleSave(careerPath.$id)}
         >
-          <BookmarkPlus size={20} color={isSaved ? "#5badec" : "#6b7280"} />
+          <Ionicons
+            name={isSaved ? "bookmark" : "bookmark-outline"}
+            size={20}
+            color={isSaved ? "#5badec" : "#6b7280"}
+          />
         </TouchableOpacity>
       </View>
       
@@ -130,7 +134,7 @@ const SurveyCareerCard: React.FC<SurveyCareerCardProps> = ({
         }}
         onPress={() => onSelectPath(careerPath.$id)}
       >
-        <Check size={16} color="#fff" />
+        <Ionicons name="checkmark" size={16} color="#fff" />
         <Text style={{ color: '#fff', fontWeight: '500', fontSize: 14, marginLeft: 4 }}>
           Select this path
         </Text>

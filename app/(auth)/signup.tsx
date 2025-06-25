@@ -3,15 +3,15 @@
 import { useState } from "react"
 import { Text, View, TouchableOpacity, Animated, Keyboard, Modal, ScrollView, Alert } from "react-native"
 import { Link, useRouter } from "expo-router"
-import { ArrowLeft, Compass, TrendingUp, RefreshCw } from "lucide-react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useEffect, useRef } from "react"
 import FormField from "@/components/FormField"
 import { KeyboardAvoidingView } from "react-native"
-import DateTimePicker from "@react-native-community/datetimepicker" // Import Expo DateTimePicker
+import DateTimePicker from "@react-native-community/datetimepicker" 
 import { createUser } from "@/lib/appwrite"
 import CustomButton from "@/components/CustomButton"
 import { useGlobalContext } from "@/context/GlobalProvider"
+import { Ionicons } from "@expo/vector-icons"
 
 
 const SignUp = () => {
@@ -91,9 +91,9 @@ const SignUp = () => {
 
   // Career stage options
   const careerStages = [
-    { label: "Pathfinder", value: "Pathfinder", icon: Compass, description: "Just starting the journey, exploring options" },
-    { label: "Trailblazer", value: "Trailblazer", icon: TrendingUp, description: "Building expertise and progressing in their field" },
-    { label: "Horizon Changer", value: "Horizon Changer", icon: RefreshCw, description: "Pivoting into new domains, seeking new opportunities" },
+    { label: "Pathfinder", value: "Pathfinder", icon: "compass-outline", description: "Just starting the journey, exploring options" },
+    { label: "Trailblazer", value: "Trailblazer", icon: "trending-up-outline", description: "Building expertise and progressing in their field" },
+    { label: "Horizon Changer", value: "Horizon Changer", icon: "refresh-outline", description: "Pivoting into new domains, seeking new opportunities" },
   ]
 
   // Get the selected career stage's icon
@@ -144,7 +144,9 @@ const SignUp = () => {
                   <Text className={`text-base flex-1 ${form.careerStage ? "text-black" : "text-gray-400"}`}>
                     {form.careerStage || "Select your career stage"}
                   </Text>
-                  {selectedCareerStage && <selectedCareerStage.icon size={20} color="#6b7280" />}
+                  {selectedCareerStage && (
+                    <Ionicons name={selectedCareerStage.icon as any} size={20} color="#6b7280" />
+                  )}
                 </View>
               </TouchableOpacity>
 
@@ -160,7 +162,6 @@ const SignUp = () => {
                     <ScrollView>
                       {careerStages.map((stage) => (
                         <TouchableOpacity
-                        
                           key={stage.value}
                           onPress={() => {
                             setForm({ ...form, careerStage: stage.value })
@@ -169,7 +170,7 @@ const SignUp = () => {
                           className="p-3 border-b border-gray-200"
                         >
                           <View className="flex-row items-center">
-                            <stage.icon size={20} color="#5badec" />
+                            <Ionicons name={stage.icon as any} size={20} color="#5badec" />
                             <View className="ml-2 flex-1">
                               <Text className="text-base text-gray-800">{stage.label}</Text>
                               <Text className="text-sm text-gray-500 mt-1">{stage.description}</Text>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import { FileSearch } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons'; // Changed import
 
 interface EmptyStateProps {
   message: string;
@@ -17,7 +17,7 @@ const EmptyState = ({ message, actionText, onAction }: EmptyStateProps) => {
       padding: 20,
       backgroundColor: '#f9fafb'
     }}>
-      <FileSearch size={56} color="#9ca3af" />
+      <Ionicons name="search-outline" size={56} color="#9ca3af" /> {/* Changed icon */}
       
       <Text style={{ 
         fontSize: 16,

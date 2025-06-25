@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Modal, TouchableOpacity, StyleSheet, Alert, ScrollView } from 'react-native';
-import { Download, X } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 
@@ -68,7 +68,7 @@ Real-World Relevance: ${project.realWorldRelevance}`;
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-            <X size={24} color="#666" />
+            <Ionicons name="close" size={24} color="#666" />
           </TouchableOpacity>
 
           <ScrollView 
@@ -99,7 +99,7 @@ Real-World Relevance: ${project.realWorldRelevance}`;
 
           <View style={styles.footer}>
             <TouchableOpacity style={styles.downloadButton} onPress={handleDownload}>
-              <Download size={18} color="#fff" />
+              <Ionicons name="download-outline" size={18} color="#fff" />
               <Text style={styles.downloadText}>Save as TXT</Text>
             </TouchableOpacity>
           </View>

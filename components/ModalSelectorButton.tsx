@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
-import { ChevronRight } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 interface ModalSelectorButtonProps {
   title: string;
@@ -57,7 +57,8 @@ const ModalSelectorButton: React.FC<ModalSelectorButtonProps> = ({
             </View>
           )}
         </View>
-        <ChevronRight size={20} color="#6b7280" />
+        {/* Replace ChevronRight with Ionicons chevron-forward */}
+        <Ionicons name="chevron-forward" size={20} color="#6b7280" />
       </TouchableOpacity>
     </View>
   );

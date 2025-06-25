@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Text, View, TouchableOpacity, Animated, Keyboard, Alert } from "react-native"
 import { Link, useFocusEffect, useRouter } from "expo-router"
-import { ArrowLeft } from "lucide-react-native"
+import { Ionicons } from "@expo/vector-icons"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useEffect, useRef } from "react"
 import FormField from "@/components/FormField"
@@ -132,7 +132,7 @@ const SignIn = () => {
           className="mt-4"
         >
          <View className="flex-row items-center">
-        <ArrowLeft size={24} color="#5badec" />
+        <Ionicons name="arrow-back" size={24} color="#5badec" />
         <Text className="ml-2 text-[#5badec] text-lg font-semibold">Back</Text>
          </View>
         </TouchableOpacity>

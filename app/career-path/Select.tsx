@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity } from 'react-native';
 import React from 'react';
-import { ArrowLeft, Compass, ClipboardList } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import CareerPathCard from '@/components/CareerCard';
 
@@ -14,7 +14,8 @@ const CareerDiscovery: React.FC = () => {
           onPress={() => router.back()}
           accessibilityLabel="Go back"
         >
-          <ArrowLeft size={24} color="#333" />
+          {/* Replace ArrowLeft with Ionicons */}
+          <Ionicons name="arrow-back" size={24} color="#333" />
         </TouchableOpacity>
         <View className="flex-1 items-center">
           <Text className="text-lg font-bold text-gray-800">Career Discovery</Text>
@@ -37,7 +38,7 @@ const CareerDiscovery: React.FC = () => {
         <View className="space-y-4">
           {/* Card 1: Select Your Own Career Path */}
           <CareerPathCard
-            icon={<Compass size={24} color="#333" />}
+            icon={<Ionicons name="compass-outline" size={24} color="#333" />}
             title="Select Your Own Career Path"
             description="Browse through different industries and career paths to find what interests you most"
             buttonText="Browse Career Paths"
@@ -53,7 +54,7 @@ const CareerDiscovery: React.FC = () => {
           
           {/* Card 2: Take the Career Survey */}
           <CareerPathCard
-            icon={<ClipboardList size={24} color="#333" />}
+            icon={<Ionicons name="list-outline" size={24} color="#333" />}
             title="Take the Career Survey"
             description="Answer a few questions to get personalized career recommendations"
             buttonText="Start Survey"

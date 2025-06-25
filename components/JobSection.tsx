@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { CheckCircle } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 type JobSectionProps = {
   title: string;
@@ -17,7 +17,8 @@ const JobSection = ({ title, items }: JobSectionProps) => {
       <Text style={styles.sectionTitle}>{title}</Text>
       {items.map((item, index) => (
         <View key={index} style={styles.listItem}>
-          <CheckCircle size={16} color="#4f46e5" style={styles.icon} />
+          {/* Use Ionicons checkmark-circle icon */}
+          <Ionicons name="checkmark-circle" size={16} color="#4f46e5" style={styles.icon} />
           <Text style={styles.listItemText}>{item}</Text>
         </View>
       ))}

@@ -7,16 +7,7 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
-import {
-  X,
-  Clock,
-  Target,
-  CheckSquare,
-  Star,
-  AlertCircle,
-  Lightbulb,
-  Award,
-} from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 // Types
 interface Project {
@@ -74,7 +65,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
             onPress={onClose}
             activeOpacity={0.7}
           >
-            <X size={22} color="#6b7280" />
+            <Ionicons name="close" size={22} color="#6b7280" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Project Details</Text>
         </View>
@@ -98,7 +89,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
               </View>
               
               <View style={styles.durationContainer}>
-                <Clock size={16} color="#6b7280" />
+                <Ionicons name="time-outline" size={16} color="#6b7280" />
                 <Text style={styles.durationText}>{project.estimatedDuration}</Text>
               </View>
             </View>
@@ -113,8 +104,8 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
           {/* Outcome */}
           {project.outcome && (
             <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <Target size={18} color="#5badec" />
+              <View style={styles.sectionHeader}> 
+                <Ionicons name="bulb-outline" size={18} color="#5badec" />
                 <Text style={styles.sectionTitle}>Learning Outcome</Text>
               </View>
               <View style={styles.outcomeContainer}>
@@ -127,7 +118,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
           {project.prerequisites && project.prerequisites.length > 0 && (
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
-                <AlertCircle size={18} color="#f59e0b" />
+                <Ionicons name="alert-circle-outline" size={18} color="#f59e0b" />
                 <Text style={styles.sectionTitle}>Prerequisites</Text>
               </View>
               <View style={styles.listContainer}>
@@ -145,7 +136,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
           {project.tools && project.tools.length > 0 && (
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
-                <Lightbulb size={18} color="#10b981" />
+                <Ionicons name="bulb-outline" size={18} color="#10b981" />
                 <Text style={styles.sectionTitle}>Tools & Technologies</Text>
               </View>
               <View style={styles.toolsGrid}>
@@ -162,7 +153,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
           {project.steps && project.steps.length > 0 && (
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
-                <CheckSquare size={18} color="#5badec" />
+                <Ionicons name="checkbox-outline" size={18} color="#5badec" />
                 <Text style={styles.sectionTitle}>Project Steps</Text>
               </View>
               <View style={styles.stepsContainer}>
@@ -182,13 +173,13 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
           {project.evaluationCriteria && project.evaluationCriteria.length > 0 && (
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
-                <Award size={18} color="#8b5cf6" />
+                <Ionicons name="ribbon-outline" size={18} color="#8b5cf6" />
                 <Text style={styles.sectionTitle}>Evaluation Criteria</Text>
               </View>
               <View style={styles.listContainer}>
                 {project.evaluationCriteria.map((criteria, index) => (
                   <View key={index} style={styles.criteriaItem}>
-                    <Star size={16} color="#8b5cf6" />
+                    <Ionicons name="star-outline" size={16} color="#8b5cf6" />
                     <Text style={styles.criteriaText}>{criteria}</Text>
                   </View>
                 ))}

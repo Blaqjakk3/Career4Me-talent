@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
-import { Search, X } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons'; // Changed import
 
 type SearchBarProps = {
   value: string;
@@ -18,7 +18,7 @@ const SearchBar = ({
   return (
     <View style={styles.container}>
       <View style={styles.searchContainer}>
-        <Search size={20} color="#6b7280" style={styles.searchIcon} />
+        <Ionicons name="search-outline" size={20} color="#6b7280" style={styles.searchIcon} /> {/* Changed icon */}
         <TextInput
           style={styles.input}
           placeholder={placeholder}
@@ -30,7 +30,7 @@ const SearchBar = ({
         />
         {value.length > 0 && (
           <TouchableOpacity onPress={onClear} style={styles.clearButton}>
-            <X size={18} color="#6b7280" />
+            <Ionicons name="close-outline" size={18} color="#6b7280" /> {/* Changed icon */}
           </TouchableOpacity>
         )}
       </View>

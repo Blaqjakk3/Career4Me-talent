@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { ArrowLeft } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 interface LearningHeaderProps {
   onBackPress: () => void;
@@ -15,7 +15,8 @@ const LearningHeader: React.FC<LearningHeaderProps> = ({ onBackPress }) => {
         accessibilityLabel="Go back"
         activeOpacity={0.7}
       >
-        <ArrowLeft size={24} color="#333" />
+        {/* Use Ionicons for the back arrow */}
+        <Ionicons name="arrow-back" size={24} color="#333" />
       </TouchableOpacity>
       
       <View style={styles.titleContainer}>

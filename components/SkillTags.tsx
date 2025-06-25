@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Image, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { MapPin, Building2, Clock, BriefcaseBusiness } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { avatars } from '@/lib/appwrite';
 import SkillTags from './SkillTags';
@@ -25,15 +25,15 @@ const JobCard = ({ job, onPress }: JobCardProps) => {
   const getJobTypeIcon = () => {
     switch (job.jobType) {
       case 'Full-time':
-        return <Clock size={16} color="#4b5563" />;
+        return <Ionicons name="time-outline" size={16} color="#4b5563" />;
       case 'Internship':
-        return <BriefcaseBusiness size={16} color="#4b5563" />;
+        return <Ionicons name="briefcase-outline" size={16} color="#4b5563" />;
       case 'Contract':
-        return <BriefcaseBusiness size={16} color="#4b5563" />;
+        return <Ionicons name="briefcase-outline" size={16} color="#4b5563" />;
       case 'Part-time':
-        return <Clock size={16} color="#4b5563" />;
+        return <Ionicons name="time-outline" size={16} color="#4b5563" />;
       default:
-        return <Clock size={16} color="#4b5563" />;
+        return <Ionicons name="time-outline" size={16} color="#4b5563" />;
     }
   };
 
@@ -72,7 +72,7 @@ const JobCard = ({ job, onPress }: JobCardProps) => {
 
       <View style={styles.detailsContainer}>
         <View style={styles.detailItem}>
-          <MapPin size={16} color="#4b5563" />
+          <Ionicons name="location-outline" size={16} color="#4b5563" />
           <Text style={styles.detailText} numberOfLines={1}>{job.location}</Text>
         </View>
 
@@ -82,7 +82,7 @@ const JobCard = ({ job, onPress }: JobCardProps) => {
         </View>
 
         <View style={styles.detailItem}>
-          <Building2 size={16} color="#4b5563" />
+          <Ionicons name="business-outline" size={16} color="#4b5563" />
           <Text style={styles.detailText}>{job.seniorityLevel}</Text>
         </View>
       </View>

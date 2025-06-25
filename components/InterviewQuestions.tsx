@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, Alert, RefreshControl } from 'react-native';
-import { Brain, ChevronDown, ChevronUp, RefreshCw, Eye, EyeOff, Lightbulb } from 'lucide-react-native';
+import { Ionicons, MaterialCommunityIcons, Feather } from '@expo/vector-icons';
 import { generateInterviewQuestionsWithRetry } from '@/lib/gemini';
 import { getCurrentUser } from '@/lib/appwrite';
 
@@ -106,15 +106,19 @@ const InterviewQuestions: React.FC = () => {
             <Text style={styles.questionText}>{question.question}</Text>
           </View>
           <View style={styles.questionActions}>
-            {hasViewedAnswer && <Eye size={16} color="#10b981" style={styles.viewedIcon} />}
-            {isExpanded ? <ChevronUp size={20} color="#6b7280" /> : <ChevronDown size={20} color="#6b7280" />}
+            {hasViewedAnswer && <Ionicons name="eye-outline" size={16} color="#10b981" style={styles.viewedIcon} />}
+            {isExpanded ? (
+              <Ionicons name="chevron-up" size={20} color="#6b7280" />
+            ) : (
+              <Ionicons name="chevron-down" size={20} color="#6b7280" />
+            )}
           </View>
         </TouchableOpacity>
 
         {isExpanded && (
           <View style={styles.answerContainer}>
             <TouchableOpacity style={styles.tipsToggle} onPress={() => toggleSet(showTips, setShowTips, index)}>
-              <Lightbulb size={16} color="#f59e0b" />
+              <MaterialCommunityIcons name="lightbulb-on-outline" size={16} color="#f59e0b" />
               <Text style={styles.tipsToggleText}>{showQuestionTips ? 'Hide Tips' : 'Show Tips'}</Text>
             </TouchableOpacity>
 
@@ -133,7 +137,7 @@ const InterviewQuestions: React.FC = () => {
               <Text style={styles.answerTitle}>Sample Answer:</Text>
               {!hasViewedAnswer && (
                 <TouchableOpacity style={styles.viewAnswerButton} onPress={() => toggleSet(viewedAnswers, setViewedAnswers, index)}>
-                  <EyeOff size={16} color="#6b7280" />
+                  <Ionicons name="eye-off-outline" size={16} color="#6b7280" />
                   <Text style={styles.viewAnswerText}>View Answer</Text>
                 </TouchableOpacity>
               )}
@@ -157,11 +161,15 @@ const InterviewQuestions: React.FC = () => {
       <View style={styles.header}>
         <View style={styles.headerContent}>
           <View style={styles.headerTitle}>
-            <Brain size={24} color="#5badec" />
+            <MaterialCommunityIcons name="brain" size={24} color="#5badec" />
             <Text style={styles.title}>Interview Practice</Text>
           </View>
           <TouchableOpacity style={styles.refreshButton} onPress={generateQuestions} disabled={isLoading}>
-            {isLoading ? <ActivityIndicator size="small" color="#5badec" /> : <RefreshCw size={20} color="#5badec" />}
+            {isLoading ? (
+              <ActivityIndicator size="small" color="#5badec" />
+            ) : (
+              <Ionicons name="refresh" size={20} color="#5badec" />
+            )}
           </TouchableOpacity>
         </View>
 
@@ -196,7 +204,7 @@ const InterviewQuestions: React.FC = () => {
 
       {questions.length === 0 && !isLoading && (
         <View style={styles.emptyState}>
-          <Brain size={48} color="#9ca3af" />
+          <MaterialCommunityIcons name="brain" size={48} color="#9ca3af" />
           <Text style={styles.emptyStateTitle}>No questions available</Text>
           <Text style={styles.emptyStateText}>Generate personalized interview questions based on your profile</Text>
           <TouchableOpacity style={styles.generateButton} onPress={generateQuestions}>

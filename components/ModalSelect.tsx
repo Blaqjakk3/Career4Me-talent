@@ -8,7 +8,7 @@ import {
   SafeAreaView,
   TextInput
 } from 'react-native';
-import { X, Search, Check, CheckCircle } from 'lucide-react-native';
+import { Ionicons, Feather } from '@expo/vector-icons';
 
 interface ModalSelectProps {
   title: string;
@@ -62,13 +62,13 @@ const ModalSelect: React.FC<ModalSelectProps> = ({
               onPress={onClose}
               className="p-2 rounded-full bg-gray-100"
             >
-              <X size={24} color="#333" />
+              <Ionicons name="close" size={24} color="#333" />
             </TouchableOpacity>
           </View>
 
           {/* Search Bar */}
           <View className="flex-row items-center bg-gray-100 rounded-lg px-3 py-2 mb-4">
-            <Search size={20} color="#6b7280" />
+            <Feather name="search" size={20} color="#6b7280" />
             <TextInput
               className="flex-1 ml-2 text-base"
               placeholder={`Search ${title.toLowerCase()}`}
@@ -77,7 +77,7 @@ const ModalSelect: React.FC<ModalSelectProps> = ({
             />
             {searchQuery.length > 0 && (
               <TouchableOpacity onPress={() => setSearchQuery('')}>
-                <X size={18} color="#6b7280" />
+                <Ionicons name="close" size={18} color="#6b7280" />
               </TouchableOpacity>
             )}
           </View>
@@ -110,9 +110,9 @@ const ModalSelect: React.FC<ModalSelectProps> = ({
                   </Text>
                   {isSelected && (
                     singleSelect ? (
-                      <CheckCircle size={20} color="#2563eb" />
+                      <Ionicons name="checkmark-circle" size={20} color="#2563eb" />
                     ) : (
-                      <Check size={20} color="#2563eb" />
+                      <Feather name="check" size={20} color="#2563eb" />
                     )
                   )}
                 </TouchableOpacity>

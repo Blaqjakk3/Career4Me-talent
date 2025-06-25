@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Clock, User, BookOpen, GraduationCap } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 interface CareerPath {
   $id: string;
@@ -40,7 +40,7 @@ const CareerPathInfo: React.FC<CareerPathInfoProps> = ({ careerPath }) => {
         
         {/* Duration */}
         <View style={styles.durationContainer}>
-          <Clock size={14} color="#5badec" />
+          <Ionicons name="time-outline" size={14} color="#5badec" />
           <Text style={styles.durationText}>{careerPath.time_to_complete}</Text>
         </View>
       </View>
@@ -53,7 +53,7 @@ const CareerPathInfo: React.FC<CareerPathInfoProps> = ({ careerPath }) => {
       {/* Info Cards - 3 items in single column */}
       <View style={styles.infoGrid}>
         <View style={styles.infoCard}>
-          <User size={16} color="#5badec" />
+          <Ionicons name="person-outline" size={16} color="#5badec" />
           <View style={styles.infoText}>
             <Text style={styles.infoLabel}>Background Required</Text>
             <Text style={styles.infoValue}>
@@ -63,7 +63,7 @@ const CareerPathInfo: React.FC<CareerPathInfoProps> = ({ careerPath }) => {
         </View>
 
         <View style={styles.infoCard}>
-          <BookOpen size={16} color="#5badec" />
+          <Ionicons name="book-outline" size={16} color="#5badec" />
           <View style={styles.infoText}>
             <Text style={styles.infoLabel}>Learning Style</Text>
             <Text style={styles.infoValue}>
@@ -74,7 +74,7 @@ const CareerPathInfo: React.FC<CareerPathInfoProps> = ({ careerPath }) => {
 
         {careerPath.suggestedDegrees && careerPath.suggestedDegrees.length > 0 && (
           <View style={styles.infoCard}>
-            <GraduationCap size={16} color="#5badec" />
+            <Ionicons name="school-outline" size={16} color="#5badec" />
             <View style={styles.infoText}>
               <Text style={styles.infoLabel}>Education</Text>
               <Text style={styles.infoValue}>

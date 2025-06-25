@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import { X } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons'; // Changed import
 
 interface SelectedItemsListProps {
   title: string;
@@ -23,7 +23,7 @@ const SelectedItemsList: React.FC<SelectedItemsListProps> = ({
           <View key={index} className="bg-blue-100 rounded-full px-3 py-1 mr-2 mb-2 flex-row items-center">
             <Text className="text-blue-800">{item}</Text>
             <TouchableOpacity onPress={() => onRemove(item)} className="ml-1">
-              <X size={16} color="#1e40af" />
+              <Ionicons name="close" size={16} color="#1e40af" /> {/* Changed icon */}
             </TouchableOpacity>
           </View>
         ))}

@@ -10,19 +10,8 @@ import {
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { useLocalSearchParams, router } from 'expo-router';
-import {
-  ArrowLeft,
-  MapPin,
-  Building2,
-  Globe,
-  Mail,
-  Users,
-  Award,
-  ExternalLink,
-  Briefcase,
-  Star,
-  TrendingUp,
-} from 'lucide-react-native';
+import { Feather, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+
 import {
   config,
   databases,
@@ -152,9 +141,7 @@ const EmployerDetails = () => {
         padding: 12,
         marginRight: 16
       }}>
-        {React.cloneElement(icon as React.ReactElement, {
-          color: accent ? 'white' : 'white'
-        })}
+        {icon}
       </View>
       <View style={{ flex: 1 }}>
         <Text style={{
@@ -175,7 +162,7 @@ const EmployerDetails = () => {
           borderRadius: 10,
           padding: 8
         }}>
-          <ExternalLink size={16} color={accent ? 'white' : '#6b7280'} />
+          <Feather name="external-link" size={16} color={accent ? 'white' : '#6b7280'} />
         </View>
       )}
     </TouchableOpacity>
@@ -211,7 +198,7 @@ const EmployerDetails = () => {
           borderRadius: 8,
           padding: 6
         }}>
-          <TrendingUp size={16} color="#6b7280" />
+          <Feather name="trending-up" size={16} color="#6b7280" />
         </View>
       </View>
       
@@ -222,7 +209,7 @@ const EmployerDetails = () => {
           padding: 6,
           marginRight: 8
         }}>
-          <MapPin size={14} color="#6b7280" />
+          <Feather name="map-pin" size={14} color="#6b7280" />
         </View>
         <Text style={{
           fontSize: 15,
@@ -351,7 +338,7 @@ const EmployerDetails = () => {
             padding: 16,
             marginBottom: 16
           }}>
-            <Building2 size={32} color="#dc2626" />
+            <MaterialCommunityIcons name="office-building" size={32} color="#dc2626" />
           </View>
           <Text style={{ fontSize: 20, color: '#111827', marginBottom: 8, fontWeight: '700' }}>
             Company Not Found
@@ -409,7 +396,7 @@ const EmployerDetails = () => {
           onPress={() => router.back()}
           accessibilityLabel="Go back"
         >
-          <ArrowLeft size={22} color="#333" />
+          <Feather name="arrow-left" size={22} color="#333" />
         </TouchableOpacity>
         <View style={{ flex: 1, alignItems: 'center' }}>
           <Text style={{
@@ -457,7 +444,6 @@ const EmployerDetails = () => {
               shadowOffset: { width: 0, height: 8 },
               shadowOpacity: 0.15,
               shadowRadius: 16,
-              elevation: 8,
             }}
           />
           <Text style={{
@@ -481,13 +467,13 @@ const EmployerDetails = () => {
           {/* Stats Row */}
           <View style={{ flexDirection: 'row', marginBottom: 20, paddingHorizontal: 20 }}>
             <StatCard
-              icon={<Briefcase size={20} color="white" />}
+              icon={<Feather name="briefcase" size={20} color="white" />}
               value={jobs.length.toString()}
               label="Open Positions"
             />
             {employer.location && (
               <StatCard
-                icon={<MapPin size={20} color="white" />}
+                icon={<Feather name="map-pin" size={20} color="white" />}
                 value={employer.location.split(',')[0] || employer.location}
                 label="Location"
               />
@@ -506,7 +492,7 @@ const EmployerDetails = () => {
 
           {employer.website && (
             <InfoCard
-              icon={<Globe size={22} color="white" />}
+              icon={<Feather name="globe" size={22} color="white" />}
               title="Website"
               value={employer.website}
               onPress={handleWebsitePress}
@@ -516,7 +502,7 @@ const EmployerDetails = () => {
 
           {employer.email && (
             <InfoCard
-              icon={<Mail size={22} color="white" />}
+              icon={<Feather name="mail" size={22} color="white" />}
               title="Contact Email"
               value={employer.email}
             />

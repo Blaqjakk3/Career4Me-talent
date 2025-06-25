@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { BookOpen, Award, Rocket } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 interface TabNavigationProps {
   activeTab: 'learning' | 'certifications' | 'projects';
@@ -8,16 +8,15 @@ interface TabNavigationProps {
 }
 
 const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange }) => {
-  const tabs = [
-    { id: 'learning' as const, label: 'Learning', icon: BookOpen },
-    { id: 'certifications' as const, label: 'Certs', icon: Award },
-    { id: 'projects' as const, label: 'Projects', icon: Rocket },
+  const tabs: { id: 'learning' | 'certifications' | 'projects'; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
+    { id: 'learning', label: 'Learning', icon: 'book-outline' },
+    { id: 'certifications', label: 'Certs', icon: 'ribbon-outline' },
+    { id: 'projects', label: 'Projects', icon: 'rocket-outline' },
   ];
 
   return (
     <View style={styles.container}>
       {tabs.map((tab) => {
-        const Icon = tab.icon;
         const isActive = activeTab === tab.id;
         
         return (
@@ -27,9 +26,10 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange })
             onPress={() => onTabChange(tab.id)}
             activeOpacity={0.8}
           >
-            <Icon 
-              size={16} 
-              color={isActive ? '#007AFF' : '#8E8E93'} 
+            <Ionicons
+              name={tab.icon}
+              size={16}
+              color={isActive ? '#007AFF' : '#8E8E93'}
             />
             <Text style={[styles.tabText, isActive && styles.activeTabText]}>
               {tab.label}

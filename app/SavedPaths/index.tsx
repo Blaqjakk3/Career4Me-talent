@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, SafeAreaView } from 'react-native';
-import { ArrowLeft } from 'lucide-react-native';
+import { Ionicons, Feather } from '@expo/vector-icons'; // Updated import
 import { router } from 'expo-router';
 import CareerCard from '@/components/careerpathcard';
 import { getSavedCareerPaths } from '@/lib/appwrite';
-import { Feather } from '@expo/vector-icons';
 
 const SavedPaths = () => {
   const [savedPaths, setSavedPaths] = useState<any[]>([]);
@@ -35,7 +34,7 @@ const SavedPaths = () => {
             onPress={() => router.back()}
             accessibilityLabel="Go back"
           >
-            <ArrowLeft size={24} color="#333" />
+            <Ionicons name="arrow-back" size={24} color="#333" /> {/* Changed icon */}
           </TouchableOpacity>
           <View style={{ flex: 1, alignItems: 'center' }}>
             <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#1f2937' }}>Saved Career Paths</Text>

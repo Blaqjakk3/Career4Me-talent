@@ -9,15 +9,7 @@ import {
   Linking,
   Alert,
 } from 'react-native';
-import {
-  X,
-  ExternalLink,
-  BookOpen,
-  Video,
-  FileText,
-  Globe,
-  Star,
-} from 'lucide-react-native';
+import { Ionicons, Feather, FontAwesome } from '@expo/vector-icons';
 import { databases, config, Query } from '../lib/appwrite';
 
 // Types
@@ -80,17 +72,17 @@ const TopicModal: React.FC<TopicModalProps> = ({
   const getResourceIcon = (type: string) => {
     switch (type.toLowerCase()) {
       case 'video':
-        return Video;
+        return (props: any) => <Ionicons name="play-circle-outline" {...props} />;
       case 'article':
       case 'blog':
-        return FileText;
+        return (props: any) => <Feather name="file-text" {...props} />;
       case 'documentation':
       case 'docs':
-        return BookOpen;
+        return (props: any) => <Feather name="book-open" {...props} />;
       case 'course':
-        return Star;
+        return (props: any) => <FontAwesome name="star" {...props} />;
       default:
-        return Globe;
+        return (props: any) => <Feather name="globe" {...props} />;
     }
   };
 
@@ -163,7 +155,7 @@ const TopicModal: React.FC<TopicModalProps> = ({
             onPress={onClose}
             activeOpacity={0.7}
           >
-            <X size={22} color="#6b7280" />
+            <Feather name="x" size={22} color="#6b7280" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>{topic.title}</Text>
         </View>
@@ -226,7 +218,7 @@ const TopicModal: React.FC<TopicModalProps> = ({
                           </View>
                         </View>
                       </View>
-                      <ExternalLink size={14} color="#94a3b8" />
+                      <Feather name="external-link" size={14} color="#94a3b8" />
                     </TouchableOpacity>
                   );
                 })}
@@ -239,7 +231,7 @@ const TopicModal: React.FC<TopicModalProps> = ({
               <View style={styles.sectionHeader}>
                 <Text style={styles.sectionTitle}>Premium Resources</Text>
                 <View style={styles.premiumIndicator}>
-                  <Star size={12} color="#f59e0b" />
+                  <FontAwesome name="star" size={12} color="#f59e0b" />
                 </View>
               </View>
               <View style={styles.resourceGrid}>
@@ -266,7 +258,7 @@ const TopicModal: React.FC<TopicModalProps> = ({
                           </View>
                         </View>
                       </View>
-                      <ExternalLink size={14} color="#94a3b8" />
+                      <Feather name="external-link" size={14} color="#94a3b8" />
                     </TouchableOpacity>
                   );
                 })}
@@ -276,7 +268,7 @@ const TopicModal: React.FC<TopicModalProps> = ({
 
           {freeResources.length === 0 && premiumResources.length === 0 && (
             <View style={styles.emptyState}>
-              <BookOpen size={32} color="#94a3b8" />
+              <Feather name="book-open" size={32} color="#94a3b8" />
               <Text style={styles.emptyTitle}>No Resources Yet</Text>
               <Text style={styles.emptyText}>Resources are being prepared for this topic</Text>
             </View>

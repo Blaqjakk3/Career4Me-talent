@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { saveCareerPath, isCareerPathSaved, isCareerPathSelected } from '@/lib/appwrite';
 import { useSavedCareerPaths } from '@/lib/savedCareerPathsContext';
-import { BookmarkPlus } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 interface Skill {
   name: string;
@@ -49,11 +49,11 @@ const CareerCard: React.FC<CareerCardProps> = ({
     checkStatus();
   }, [id]);
 
-  const getSkillName = (skill: string | Skill) => {
+  const getSkillName = (skill: string | Skill): string => {
     if (typeof skill === 'string') {
       return skill;
-    } else if (typeof skill === 'object' && 'name' in skill) {
-      return skill.name;
+    } else if (typeof skill === 'object' && skill && 'name' in skill) {
+      return skill.name || 'Unknown skill';
     }
     return 'Unknown skill';
   };
@@ -84,6 +84,10 @@ const CareerCard: React.FC<CareerCardProps> = ({
     );
   }
 
+  // Ensure we have valid strings for display
+  const displayTitle = title || 'Untitled Career Path';
+  const displayDescription = description || 'No description available';
+
   return (
     <View
       style={{
@@ -100,7 +104,7 @@ const CareerCard: React.FC<CareerCardProps> = ({
     >
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
         <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#1f2937', flex: 1 }}>
-          {title}
+          {displayTitle}
         </Text>
         {isSelected ? (
           <View style={{
@@ -123,32 +127,41 @@ const CareerCard: React.FC<CareerCardProps> = ({
             {isLoading ? (
               <ActivityIndicator size="small" color="#5badec" />
             ) : (
-               <BookmarkPlus size={20} color={isSaved ? "#5badec" : "#6b7280"} />
+              <Ionicons
+                name={isSaved ? "bookmark" : "bookmark-outline"}
+                size={20}
+                color={isSaved ? "#5badec" : "#6b7280"}
+              />
             )}
           </TouchableOpacity>
         )}
       </View>
       
       <Text style={{ fontSize: 14, color: '#4b5563', marginBottom: 12 }}>
-        {description}
+        {displayDescription}
       </Text>
 
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 16 }}>
-        {visibleSkills.map((skill, index) => (
-          <View
-            key={index}
-            style={{
-              backgroundColor: '#e5e7eb',
-              borderRadius: 999,
-              paddingVertical: 6,
-              paddingHorizontal: 12,
-              marginRight: 8,
-              marginBottom: 8,
-            }}
-          >
-            <Text style={{ fontSize: 12, color: '#1f2937' }}>{getSkillName(skill)}</Text>
-          </View>
-        ))}
+        {visibleSkills.map((skill, index) => {
+          const skillName = getSkillName(skill);
+          return (
+            <View
+              key={index}
+              style={{
+                backgroundColor: '#e5e7eb',
+                borderRadius: 999,
+                paddingVertical: 6,
+                paddingHorizontal: 12,
+                marginRight: 8,
+                marginBottom: 8,
+              }}
+            >
+              <Text style={{ fontSize: 12, color: '#1f2937' }}>
+                {skillName}
+              </Text>
+            </View>
+          );
+        })}
         {remainingSkillsCount > 0 && (
           <View
             style={{

@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
 import { databases, config, getCurrentUser, saveCareerPath, isCareerPathSaved, selectCareerPath, isCareerPathSelected } from '@/lib/appwrite';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ArrowLeft, Bookmark } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
 import ConfettiCannon from 'react-native-confetti-cannon';
 
@@ -765,7 +765,7 @@ const PathInfo: React.FC = () => {
           onPress={() => router.back()}
           accessibilityLabel="Go back"
         >
-          <ArrowLeft size={24} color="#374151" />
+          <Ionicons name="arrow-back" size={24} color="#374151" />
         </TouchableOpacity>
         <View style={{ 
           flex: 1,
@@ -835,7 +835,11 @@ const PathInfo: React.FC = () => {
             {isBookmarkLoading ? (
               <ActivityIndicator size="small" color="#5badec" />
             ) : (
-              <Bookmark size={24} color="#5badec" fill={isSaved ? "#5badec" : "transparent"} />
+              <Ionicons
+                name={isSaved ? "bookmark" : "bookmark-outline"}
+                size={24}
+                color="#5badec"
+              />
             )}
           </TouchableOpacity>
         </View>

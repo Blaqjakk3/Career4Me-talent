@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getDailyQuote, getCurrentUser } from '../../lib/appwrite';
 import { useGlobalContext } from '../../context/GlobalProvider';
-import { Compass, BookOpen, FileText, Briefcase, ChevronRight, MessagesSquare } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Link, router } from 'expo-router';
 import { Pressable } from 'react-native';
@@ -43,7 +42,7 @@ const Dashboard = () => {
   const actionItems = [
     { 
       title: 'Discover Career Path', 
-      icon: <Compass size={26} color="#fff" />,
+      icon: <Ionicons name="compass-outline" size={26} color="#fff" />,
       description: 'Explore career options that match your skills',
       key: 'career-path',
       colors: ['#FF7E5F', '#FD3A69'],
@@ -51,7 +50,7 @@ const Dashboard = () => {
     },
     { 
       title: 'Learning Resources', 
-      icon: <BookOpen size={26} color="#fff" />,
+      icon: <Ionicons name="book-outline" size={26} color="#fff" />,
       description: 'Boost your knowledge with curated courses',
       key: 'learning',
       colors: ['#45A2FF', '#004E92'],
@@ -59,7 +58,7 @@ const Dashboard = () => {
     },
     { 
       title: 'Interview Prep', 
-      icon: <FileText size={26} color="#fff" />,
+      icon: <Ionicons name="document-text-outline" size={26} color="#fff" />,
       description: 'Ace your interviews with expert advice',
       key: 'interview',
       colors: ['#7D5AFF', '#6A11CB'],
@@ -67,7 +66,7 @@ const Dashboard = () => {
     },
     { 
       title: 'Job Opportunities', 
-      icon: <Briefcase size={26} color="#fff" />,
+      icon: <Ionicons name="briefcase-outline" size={26} color="#fff" />,
       description: 'Find your next career opportunity',
       key: 'jobs',
       colors: ['#29C17E', '#006400'],
@@ -75,7 +74,7 @@ const Dashboard = () => {
     },
     { 
       title: 'Interview Prep', 
-      icon: <MessagesSquare size={26} color="#fff" />,
+      icon: <Ionicons name="chatbubble-ellipses-outline" size={26} color="#fff" />,
       description: 'Prepare for your next Interview',
       key: 'interview-prep',
       colors: ['#29C17E', '#006400'],
@@ -83,7 +82,7 @@ const Dashboard = () => {
     },
     { 
       title: 'Test Information', 
-      icon: <FileText size={26} color="#fff" />,
+      icon: <Ionicons name="information-circle-outline" size={26} color="#fff" />,
       description: 'View all test related information',
       key: 'test-info',
       colors: ['#FF6B6B', '#EE0979'],
@@ -162,7 +161,7 @@ const Dashboard = () => {
                     <Text style={styles.actionTitle}>{item.title}</Text>
                     <Text style={styles.actionDescription}>{item.description}</Text>
                   </View>
-                  <ChevronRight size={22} color="#fff" style={styles.chevron} />
+                  <Ionicons name="chevron-forward-outline" size={22} color="#fff" style={styles.chevron} />
                 </LinearGradient>
               </TouchableOpacity>
             </Link>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native'
-import { ArrowLeft, Star } from 'lucide-react-native'
+import { Ionicons } from '@expo/vector-icons'
 import { router } from 'expo-router'
 import { getCareerPathById } from '@/lib/appwrite'
 
@@ -112,7 +112,8 @@ const Selected: React.FC<SelectedProps> = ({ selectedPathId }) => {
           onPress={() => router.back()}
           accessibilityLabel="Go back"
         >
-          <ArrowLeft size={24} color="#333" />
+          {/* Replace ArrowLeft with Ionicons arrow-back */}
+          <Ionicons name="arrow-back" size={24} color="#333" />
         </TouchableOpacity>
         <View className="flex-1 items-center">
           <Text className="text-lg font-bold text-gray-800">Your Career Path</Text>
@@ -147,7 +148,8 @@ const Selected: React.FC<SelectedProps> = ({ selectedPathId }) => {
             className="bg-[#5badec] p-4 rounded-lg flex-row items-center justify-center"
             onPress={() => router.push('/SavedPaths')}
           >
-            <Star size={20} color="white" />
+            {/* Replace Star with Ionicons star */}
+            <Ionicons name="star" size={20} color="white" />
             <Text className="text-white text-center font-semibold text-lg ml-2">
               View Saved Paths
             </Text>

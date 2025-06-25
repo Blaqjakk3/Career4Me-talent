@@ -9,18 +9,12 @@ import {
   ActivityIndicator,
 } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import {
-  ArrowLeft,
-  Search,
-  MapPin,
-  Building2,
-  Clock,
-  Award,
-  ChevronDown,
-  ChevronRight,
-  BookmarkCheck,
-  Briefcase
-} from 'lucide-react-native'
+import { 
+  Ionicons, 
+  MaterialCommunityIcons, 
+  FontAwesome5, 
+  MaterialIcons 
+} from '@expo/vector-icons'
 import { router } from 'expo-router'
 import {
   config,
@@ -431,7 +425,7 @@ const Jobs = () => {
         paddingHorizontal: 8,
         paddingVertical: 4
       }}>
-        <MapPin size={14} color="#6b7280" />
+        <Ionicons name="location-outline" size={14} color="#6b7280" />
         <Text style={{ 
           marginLeft: 6, 
           fontSize: 13, 
@@ -445,23 +439,23 @@ const Jobs = () => {
       {/* Job details pills - more compact */}
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 4 }}>
         <InfoPill 
-          icon={<Clock size={12} color="white" />} 
+          icon={<Ionicons name="time-outline" size={12} color="white" />} 
           text={item.jobtype} 
           variant="primary"
         />
         <InfoPill 
-          icon={<Building2 size={12} color="white" />} 
+          icon={<FontAwesome5 name="building" size={12} color="white" />} 
           text={item.workenvironment}
           variant="secondary"
         />
         <InfoPill 
-          icon={<Award size={12} color="white" />} 
+          icon={<MaterialCommunityIcons name="medal-outline" size={12} color="white" />} 
           text={item.seniorityLevel}
           variant="accent"
         />
         {item.industry && (
           <InfoPill 
-            icon={<Briefcase size={12} color="white" />} 
+            icon={<Ionicons name="briefcase-outline" size={12} color="white" />} 
             text={item.industry}
             variant="primary"
           />
@@ -506,9 +500,9 @@ const Jobs = () => {
           </Text>
         </View>
         {item.isExpanded ? (
-          <ChevronDown size={24} color="#5badec" />
+          <Ionicons name="chevron-down" size={24} color="#5badec" />
         ) : (
-          <ChevronRight size={24} color="#5badec" />
+          <Ionicons name="chevron-forward" size={24} color="#5badec" />
         )}
       </TouchableOpacity>
 
@@ -599,7 +593,7 @@ const Jobs = () => {
           }}
           onPress={() => router.back()}
         >
-          <ArrowLeft size={22} color="#333" />
+          <Ionicons name="arrow-back" size={22} color="#333" />
         </TouchableOpacity>
         <Text style={{
           fontSize: 18,
@@ -614,7 +608,7 @@ const Jobs = () => {
           }}
           onPress={() => router.push('/jobs/savedjobs')}
         >
-          <BookmarkCheck size={22} color="#5badec" />
+          <MaterialCommunityIcons name="bookmark-check-outline" size={22} color="#5badec" />
         </TouchableOpacity>
       </View>
 
@@ -661,7 +655,7 @@ const Jobs = () => {
           shadowRadius: 8,
           elevation: 2,
         }}>
-          <Search size={20} color="#9ca3af" />
+          <Ionicons name="search" size={20} color="#9ca3af" />
           <TextInput
             style={{ flex: 1, paddingVertical: 16, paddingHorizontal: 12, fontSize: 16 }}
             placeholder="Search by job title, employer, or skills"
@@ -715,7 +709,7 @@ const Jobs = () => {
                     padding: 16,
                     marginBottom: 16
                   }}>
-                    <Briefcase size={32} color="#5badec" />
+                    <Ionicons name="briefcase-outline" size={32} color="#5badec" />
                   </View>
                   <Text style={{ fontSize: 18, color: '#111827', fontWeight: '700', textAlign: 'center' }}>
                     No job opportunities found
@@ -754,7 +748,7 @@ const Jobs = () => {
                     padding: 16,
                     marginBottom: 16
                   }}>
-                    <BookmarkCheck size={32} color="#5badec" />
+                    <MaterialCommunityIcons name="bookmark-check-outline" size={32} color="#5badec" />
                   </View>
                   <Text style={{ fontSize: 18, color: '#111827', fontWeight: '700', textAlign: 'center' }}>
                     {user?.savedPaths?.length === 0 

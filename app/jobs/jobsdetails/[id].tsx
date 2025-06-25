@@ -11,25 +11,13 @@ import {
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { useLocalSearchParams, router } from 'expo-router';
-import {
-  ArrowLeft,
-  MapPin,
-  Building2,
-  Clock,
-  Award,
-  FileCheck,
-  BookOpen,
-  Briefcase,
-  ExternalLink,
-  GraduationCap,
-  CheckCircle2,
-  Star,
-  TrendingUp,
-  Users,
-  Heart,
-  Share,
-  FileText
-} from 'lucide-react-native';
+import { 
+  Ionicons, 
+  MaterialCommunityIcons, 
+  FontAwesome5, 
+  Feather, 
+  AntDesign 
+} from '@expo/vector-icons';
 import {
   config,
   databases,
@@ -317,7 +305,7 @@ const JobDetails = () => {
         marginRight: 12,
         marginTop: 2
       }}>
-        <CheckCircle2 size={14} color="white" />
+        <AntDesign name="checkcircle" size={14} color="white" />
       </View>
       <Text style={{
         fontSize: 16,
@@ -420,7 +408,7 @@ const JobDetails = () => {
             padding: 16,
             marginBottom: 16
           }}>
-            <Briefcase size={32} color="#dc2626" />
+            <Feather name="briefcase" size={32} color="#dc2626" />
           </View>
           <Text style={{ fontSize: 20, color: '#111827', marginBottom: 8, fontWeight: '700' }}>
             Job Not Found
@@ -478,7 +466,7 @@ const JobDetails = () => {
           onPress={() => router.back()}
           accessibilityLabel="Go back"
         >
-          <ArrowLeft size={22} color="#333" />
+          <Ionicons name="arrow-back" size={22} color="#333" />
         </TouchableOpacity>
         <View style={{ flex: 1, alignItems: 'center' }}>
           <Text style={{
@@ -527,7 +515,6 @@ const JobDetails = () => {
                 shadowOffset: { width: 0, height: 4 },
                 shadowOpacity: 0.15,
                 shadowRadius: 8,
-                elevation: 6,
               }}
             />
             
@@ -566,7 +553,7 @@ const JobDetails = () => {
               paddingVertical: 8,
               marginBottom: 20
             }}>
-              <MapPin size={16} color="#6b7280" />
+              <Feather name="map-pin" size={16} color="#6b7280" />
               <Text style={{ 
                 marginLeft: 8, 
                 fontSize: 15, 
@@ -580,7 +567,7 @@ const JobDetails = () => {
           <View style={{ flexDirection: 'row', marginBottom: 20 }}>
             <ActionButton
               onPress={handleApply}
-              icon={<ExternalLink size={18} color="white" />}
+              icon={<Feather name="external-link" size={18} color="white" />}
               label="Apply Now"
               variant="filled"
             />
@@ -590,10 +577,10 @@ const JobDetails = () => {
                 savingJob ? (
                   <ActivityIndicator size={18} color="#5badec" />
                 ) : (
-                  <Heart 
+                  <AntDesign 
+                    name={isSaved ? "heart" : "hearto"}
                     size={18} 
-                    color="#5badec" 
-                    fill={isSaved ? "#5badec" : "transparent"}
+                    color="#5badec"
                   />
                 )
               }
@@ -612,23 +599,23 @@ const JobDetails = () => {
           marginBottom: 16
         }}>
           <InfoPill 
-            icon={<Clock size={16} color="white" />} 
+            icon={<Ionicons name="time" size={16} color="white" />} 
             text={job.jobtype} 
             variant="primary"
           />
           <InfoPill 
-            icon={<Building2 size={16} color="white" />} 
+            icon={<FontAwesome5 name="building" size={16} color="white" />} 
             text={job.workenvironment}
             variant="secondary"
           />
           <InfoPill 
-            icon={<Award size={16} color="white" />} 
+            icon={<MaterialCommunityIcons name="medal" size={16} color="white" />} 
             text={job.seniorityLevel}
             variant="accent"
           />
           {job.industry && (
             <InfoPill 
-              icon={<Briefcase size={16} color="white" />} 
+              icon={<Feather name="briefcase" size={16} color="white" />} 
               text={job.industry}
               variant="primary"
             />
@@ -716,7 +703,7 @@ const JobDetails = () => {
             }}
             onPress={handleApply}
           >
-            <ExternalLink size={20} color="white" />
+            <Feather name="external-link" size={20} color="white" />
             <Text style={{
               color: 'white',
               fontWeight: '700',

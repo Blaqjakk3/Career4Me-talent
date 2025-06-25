@@ -9,15 +9,11 @@ import {
   Alert
 } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import {
-  ArrowLeft,
-  MapPin,
-  Building2,
-  Clock,
-  Award,
-  Bookmark,
-  BookmarkCheck
-} from 'lucide-react-native'
+import { 
+  Ionicons, 
+  Feather, 
+  MaterialCommunityIcons 
+} from '@expo/vector-icons'
 import { router } from 'expo-router'
 import {
   getSavedJobs,
@@ -195,22 +191,22 @@ const SavedJobs = () => {
             {isRemoving ? (
               <ActivityIndicator size="small" color="#dc2626" />
             ) : (
-              <BookmarkCheck size={20} color="#dc2626" />
+              <Feather name="bookmark" size={20} color="#dc2626" />
             )}
           </TouchableOpacity>
         </View>
 
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-          <MapPin size={16} color="#6b7280" />
+          <Feather name="map-pin" size={16} color="#6b7280" />
           <Text style={{ marginLeft: 6, fontSize: 14, color: '#6b7280' }}>
             {item.location}
           </Text>
         </View>
 
         <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-          <InfoPill icon={<Clock size={14} color="#6b7280" />} text={item.jobtype} />
-          <InfoPill icon={<Building2 size={14} color="#6b7280" />} text={item.workenvironment} />
-          <InfoPill icon={<Award size={14} color="#6b7280" />} text={item.seniorityLevel} />
+          <InfoPill icon={<Feather name="clock" size={14} color="#6b7280" />} text={item.jobtype} />
+          <InfoPill icon={<Feather name="briefcase" size={14} color="#6b7280" />} text={item.workenvironment} />
+          <InfoPill icon={<Feather name="award" size={14} color="#6b7280" />} text={item.seniorityLevel} />
         </View>
 
         {/* Date saved (if available) */}
@@ -249,7 +245,7 @@ const SavedJobs = () => {
             onPress={() => router.back()}
             accessibilityLabel="Go back"
           >
-            <ArrowLeft size={22} color="#333" />
+            <Ionicons name="arrow-back" size={22} color="#333" />
           </TouchableOpacity>
           <View style={{ flex: 1, alignItems: 'center' }}>
             <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#1f2937' }}>
@@ -275,7 +271,7 @@ const SavedJobs = () => {
         </View>
       ) : savedJobs.length === 0 ? (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-          <Bookmark size={64} color="#d1d5db" />
+          <Ionicons name="bookmark-outline" size={64} color="#d1d5db" />
           <Text style={{ fontSize: 18, fontWeight: '600', color: '#1f2937', marginTop: 16, textAlign: 'center' }}>
             No Saved Jobs Yet
           </Text>

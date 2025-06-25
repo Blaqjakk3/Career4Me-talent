@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Linking, Alert, ActivityIndicator } from 'react-native';
-import { CheckCircle, Circle, ExternalLink, DollarSign, Clock, BarChart3, Timer } from 'lucide-react-native';
+import { Ionicons, MaterialCommunityIcons, Feather, FontAwesome5 } from '@expo/vector-icons';
 import { generateProjectsWithRetry } from '@/lib/gemini';
 import { getCurrentUser } from '@/lib/appwrite';
 import AIProjectModal from './AIProjectModal';
@@ -167,11 +167,11 @@ const LearningContent: React.FC<LearningContentProps> = ({
                 >
                   <View style={styles.topicCardHeader}>
                     {isCompleted ? (
-                      <CheckCircle size={16} color="#10b981" />
+                      <Ionicons name="checkmark-circle" size={16} color="#10b981" />
                     ) : (
-                      <Circle size={16} color="#94a3b8" />
+                      <Ionicons name="ellipse-outline" size={16} color="#94a3b8" />
                     )}
-                    <ExternalLink size={12} color="#94a3b8" />
+                    <Ionicons name="open-outline" size={12} color="#94a3b8" />
                   </View>
                   <Text style={[styles.topicCardTitle, isCompleted && styles.completedTopicCardTitle]} numberOfLines={2}>
                     {topic.title}
@@ -202,14 +202,14 @@ const LearningContent: React.FC<LearningContentProps> = ({
             <View style={styles.compactCardMeta}>
               {cert.is_paid && (
                 <View style={styles.compactBadge}>
-                  <DollarSign size={10} color="#f59e0b" />
+                  <FontAwesome5 name="dollar-sign" size={10} color="#f59e0b" />
                 </View>
               )}
               <View style={styles.durationBadge}>
-                <Clock size={10} color="#6b7280" />
+                <Feather name="clock" size={10} color="#6b7280" />
                 <Text style={styles.durationBadgeText}>{cert.duration}</Text>
               </View>
-              <ExternalLink size={14} color="#5badec" />
+              <Ionicons name="open-outline" size={14} color="#5badec" />
             </View>
           </View>
         </TouchableOpacity>
@@ -290,7 +290,7 @@ const LearningContent: React.FC<LearningContentProps> = ({
                 </View>
                 <View style={styles.compactCardMeta}>
                   <View style={styles.durationBadge}>
-                    <Timer size={10} color="#6b7280" />
+                    <MaterialCommunityIcons name="timer-outline" size={10} color="#6b7280" />
                     <Text style={styles.durationBadgeText}>{project.timeCommitment}</Text>
                   </View>
                 </View>
@@ -328,10 +328,10 @@ const LearningContent: React.FC<LearningContentProps> = ({
                     </Text>
                   </View>
                   <View style={styles.durationBadge}>
-                    <Timer size={10} color="#6b7280" />
+                    <MaterialCommunityIcons name="timer-outline" size={10} color="#6b7280" />
                     <Text style={styles.durationBadgeText}>{project.estimatedDuration}</Text>
                   </View>
-                  <ExternalLink size={14} color="#5badec" />
+                  <Ionicons name="open-outline" size={14} color="#5badec" />
                 </View>
               </View>
 
