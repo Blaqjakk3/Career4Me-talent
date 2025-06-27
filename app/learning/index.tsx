@@ -18,9 +18,9 @@ import {
   Query,
 } from '../../lib/appwrite';
 import { router } from 'expo-router';
+import Header from '@/components/Header';
 
 // Import components
-import LearningHeader from '@/components/LearningHeader';
 import CareerPathInfo from '@/components/CareerPathInfo';
 import TabNavigation from '@/components/TabNavigation';
 import LearningContent from '@/components/LearningContent';
@@ -384,6 +384,10 @@ const Learning = () => {
     setProjectModalVisible(true);
   };
 
+  const handleBackPress = () => {
+    router.back();
+  };
+
   // Render loading state
   if (loading) {
     return (
@@ -423,7 +427,7 @@ const Learning = () => {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         showsVerticalScrollIndicator={false}
       >
-        <LearningHeader onBackPress={() => router.back()} />
+        <Header title="Learning Pathway" onBackPress={handleBackPress} />
         
         <CareerPathInfo careerPath={careerPath} />
         

@@ -9,6 +9,8 @@ import {
   ActivityIndicator,
   StyleSheet
 } from 'react-native';
+import { useRouter } from 'expo-router';
+import Header from '@/components/Header';
 import { getCurrentUser } from '@/lib/appwrite';
 import { 
   generateCVWithRetry, 
@@ -58,6 +60,7 @@ interface ContactInfo {
 }
 
 const CVGenerator: React.FC = () => {
+  const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [additionalSkills, setAdditionalSkills] = useState<string[]>([]);
@@ -84,6 +87,10 @@ const CVGenerator: React.FC = () => {
     } catch (error) {
       Alert.alert('Error', 'Failed to load user data');
     }
+  };
+
+  const handleBackPress = () => {
+    router.back();
   };
 
   const addSkill = () => {
@@ -250,346 +257,356 @@ const CVGenerator: React.FC = () => {
 
   if (!user) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#007AFF" />
-        <Text>Loading user data...</Text>
+      <View style={styles.container}>
+        <Header title="CV Generator" onBackPress={handleBackPress} />
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#007AFF" />
+          <Text>Loading user data...</Text>
+        </View>
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <Text style={styles.title}>Generate Your Professional CV</Text>
+    <View style={styles.container}>
+      <Header title="CV Generator" onBackPress={handleBackPress} />
+      
+      <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+        <Text style={styles.title}>Generate Your Professional CV</Text>
 
-      {/* Contact Information */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Contact Information</Text>
-        <TextInput
-          style={styles.input}
-          value={contactInfo.phone}
-          onChangeText={(value) => updateContactInfo('phone', value)}
-          placeholder="Phone Number"
-        />
-        <TextInput
-          style={styles.input}
-          value={contactInfo.linkedin}
-          onChangeText={(value) => updateContactInfo('linkedin', value)}
-          placeholder="LinkedIn Profile URL"
-        />
-        <TextInput
-          style={styles.input}
-          value={contactInfo.github}
-          onChangeText={(value) => updateContactInfo('github', value)}
-          placeholder="GitHub Profile URL"
-        />
-        <TextInput
-          style={styles.input}
-          value={contactInfo.portfolio}
-          onChangeText={(value) => updateContactInfo('portfolio', value)}
-          placeholder="Portfolio Website URL"
-        />
-      </View>
-
-      {/* Existing Skills */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Current Skills</Text>
-        <View style={styles.skillsContainer}>
-          {user.skills?.map((skill: string, index: number) => (
-            <View key={index} style={[styles.skillChip, styles.existingSkill]}>
-              <Text style={styles.skillText}>{skill}</Text>
-            </View>
-          ))}
-        </View>
-      </View>
-
-      {/* Additional Skills */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Additional Skills</Text>
-        <View style={styles.inputRow}>
+        {/* Contact Information */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Contact Information</Text>
           <TextInput
-            style={[styles.input, { flex: 1 }]}
-            value={newSkill}
-            onChangeText={setNewSkill}
-            placeholder="Add a skill"
-            onSubmitEditing={addSkill}
+            style={styles.input}
+            value={contactInfo.phone}
+            onChangeText={(value) => updateContactInfo('phone', value)}
+            placeholder="Phone Number"
           />
-          <TouchableOpacity style={styles.addButton} onPress={addSkill}>
-            <Text style={styles.addButtonText}>Add</Text>
-          </TouchableOpacity>
+          <TextInput
+            style={styles.input}
+            value={contactInfo.linkedin}
+            onChangeText={(value) => updateContactInfo('linkedin', value)}
+            placeholder="LinkedIn Profile URL"
+          />
+          <TextInput
+            style={styles.input}
+            value={contactInfo.github}
+            onChangeText={(value) => updateContactInfo('github', value)}
+            placeholder="GitHub Profile URL"
+          />
+          <TextInput
+            style={styles.input}
+            value={contactInfo.portfolio}
+            onChangeText={(value) => updateContactInfo('portfolio', value)}
+            placeholder="Portfolio Website URL"
+          />
         </View>
-        <View style={styles.skillsContainer}>
-          {additionalSkills.map((skill, index) => (
-            <TouchableOpacity
-              key={index}
-              style={[styles.skillChip, styles.additionalSkill]}
-              onPress={() => removeSkill(skill)}
-            >
-              <Text style={styles.skillText}>{skill} ×</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
 
-      {/* Education */}
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Education</Text>
-          <TouchableOpacity style={styles.addButton} onPress={addEducation}>
-            <Text style={styles.addButtonText}>Add Education</Text>
-          </TouchableOpacity>
-        </View>
-        {educationDetails.map((edu, index) => (
-          <View key={index} style={styles.itemContainer}>
-            <TextInput
-              style={styles.input}
-              value={edu.degree}
-              onChangeText={(value) => updateEducation(index, 'degree', value)}
-              placeholder="Degree (e.g., BSc Computer Science)"
-            />
-            <TextInput
-              style={styles.input}
-              value={edu.institution}
-              onChangeText={(value) => updateEducation(index, 'institution', value)}
-              placeholder="Institution"
-            />
-            <TextInput
-              style={styles.input}
-              value={edu.location}
-              onChangeText={(value) => updateEducation(index, 'location', value)}
-              placeholder="Location (optional)"
-            />
-            <View style={styles.dateRow}>
-              <TextInput
-                style={[styles.input, styles.dateInput]}
-                value={edu.startDate}
-                onChangeText={(value) => updateEducation(index, 'startDate', value)}
-                placeholder="Start Date"
-              />
-              <TextInput
-                style={[styles.input, styles.dateInput]}
-                value={edu.endDate}
-                onChangeText={(value) => updateEducation(index, 'endDate', value)}
-                placeholder="End Date"
-              />
-            </View>
-            <TouchableOpacity
-              style={styles.removeButton}
-              onPress={() => removeEducation(index)}
-            >
-              <Text style={styles.removeButtonText}>Remove</Text>
-            </TouchableOpacity>
-          </View>
-        ))}
-      </View>
-
-      {/* Work Experience */}
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Work Experience</Text>
-          <TouchableOpacity style={styles.addButton} onPress={addWorkExperience}>
-            <Text style={styles.addButtonText}>Add Experience</Text>
-          </TouchableOpacity>
-        </View>
-        {workExperiences.map((exp, index) => (
-          <View key={index} style={styles.itemContainer}>
-            <TextInput
-              style={styles.input}
-              value={exp.position}
-              onChangeText={(value) => updateWorkExperience(index, 'position', value)}
-              placeholder="Position/Job Title"
-            />
-            <TextInput
-              style={styles.input}
-              value={exp.company}
-              onChangeText={(value) => updateWorkExperience(index, 'company', value)}
-              placeholder="Company/Organization"
-            />
-            <TextInput
-              style={styles.input}
-              value={exp.location}
-              onChangeText={(value) => updateWorkExperience(index, 'location', value)}
-              placeholder="Location (optional)"
-            />
-            <View style={styles.dateRow}>
-              <TextInput
-                style={[styles.input, styles.dateInput]}
-                value={exp.startDate}
-                onChangeText={(value) => updateWorkExperience(index, 'startDate', value)}
-                placeholder="Start Date"
-              />
-              <TextInput
-                style={[styles.input, styles.dateInput]}
-                value={exp.endDate}
-                onChangeText={(value) => updateWorkExperience(index, 'endDate', value)}
-                placeholder="End Date"
-              />
-            </View>
-            <TextInput
-              style={[styles.input, styles.textArea]}
-              value={exp.description}
-              onChangeText={(value) => updateWorkExperience(index, 'description', value)}
-              placeholder="Job description and achievements"
-              multiline
-              numberOfLines={4}
-            />
-            <TouchableOpacity
-              style={styles.removeButton}
-              onPress={() => removeWorkExperience(index)}
-            >
-              <Text style={styles.removeButtonText}>Remove</Text>
-            </TouchableOpacity>
-          </View>
-        ))}
-      </View>
-
-      {/* Projects */}
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Projects</Text>
-          <TouchableOpacity style={styles.addButton} onPress={addProject}>
-            <Text style={styles.addButtonText}>Add Project</Text>
-          </TouchableOpacity>
-        </View>
-        {projects.map((project, projectIndex) => (
-          <View key={projectIndex} style={styles.itemContainer}>
-            <TextInput
-              style={styles.input}
-              value={project.title}
-              onChangeText={(value) => updateProject(projectIndex, 'title', value)}
-              placeholder="Project Title"
-            />
-            <TextInput
-              style={styles.input}
-              value={project.description}
-              onChangeText={(value) => updateProject(projectIndex, 'description', value)}
-              placeholder="Brief Description"
-            />
-            <TextInput
-              style={styles.input}
-              value={project.technologies}
-              onChangeText={(value) => updateProject(projectIndex, 'technologies', value)}
-              placeholder="Technologies Used (comma separated)"
-            />
-            <TextInput
-              style={styles.input}
-              value={project.link}
-              onChangeText={(value) => updateProject(projectIndex, 'link', value)}
-              placeholder="Project Link/URL (optional)"
-            />
-            
-            <Text style={styles.subSectionTitle}>Project Details/Achievements:</Text>
-            {project.details.map((detail, detailIndex) => (
-              <View key={detailIndex} style={styles.inputRow}>
-                <TextInput
-                  style={[styles.input, { flex: 1 }]}
-                  value={detail}
-                  onChangeText={(value) => updateProjectDetail(projectIndex, detailIndex, value)}
-                  placeholder="Project detail or achievement"
-                  multiline
-                />
-                <TouchableOpacity
-                  style={styles.miniRemoveButton}
-                  onPress={() => removeProjectDetail(projectIndex, detailIndex)}
-                >
-                  <Text style={styles.removeButtonText}>×</Text>
-                </TouchableOpacity>
+        {/* Existing Skills */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Current Skills</Text>
+          <View style={styles.skillsContainer}>
+            {user.skills?.map((skill: string, index: number) => (
+              <View key={index} style={[styles.skillChip, styles.existingSkill]}>
+                <Text style={styles.skillText}>{skill}</Text>
               </View>
             ))}
-            
-            <TouchableOpacity
-              style={styles.smallAddButton}
-              onPress={() => addProjectDetail(projectIndex)}
-            >
-              <Text style={styles.addButtonText}>Add Detail</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity
-              style={styles.removeButton}
-              onPress={() => removeProject(projectIndex)}
-            >
-              <Text style={styles.removeButtonText}>Remove Project</Text>
-            </TouchableOpacity>
           </View>
-        ))}
-      </View>
-
-      {/* Certifications */}
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Certifications & Achievements</Text>
-          <TouchableOpacity style={styles.addButton} onPress={addCertification}>
-            <Text style={styles.addButtonText}>Add Certification</Text>
-          </TouchableOpacity>
         </View>
-        {certifications.map((cert, index) => (
-          <View key={index} style={styles.itemContainer}>
+
+        {/* Additional Skills */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Additional Skills</Text>
+          <View style={styles.inputRow}>
             <TextInput
-              style={styles.input}
-              value={cert.title}
-              onChangeText={(value) => updateCertification(index, 'title', value)}
-              placeholder="Certification Title"
+              style={[styles.input, { flex: 1 }]}
+              value={newSkill}
+              onChangeText={setNewSkill}
+              placeholder="Add a skill"
+              onSubmitEditing={addSkill}
             />
-            <TextInput
-              style={styles.input}
-              value={cert.issuer}
-              onChangeText={(value) => updateCertification(index, 'issuer', value)}
-              placeholder="Issuing Organization"
-            />
-            <TextInput
-              style={styles.input}
-              value={cert.date}
-              onChangeText={(value) => updateCertification(index, 'date', value)}
-              placeholder="Date Obtained"
-            />
-            <TextInput
-              style={styles.input}
-              value={cert.link}
-              onChangeText={(value) => updateCertification(index, 'link', value)}
-              placeholder="Certification Link/URL (optional)"
-            />
-            <TouchableOpacity
-              style={styles.removeButton}
-              onPress={() => removeCertification(index)}
-            >
-              <Text style={styles.removeButtonText}>Remove</Text>
+            <TouchableOpacity style={styles.addButton} onPress={addSkill}>
+              <Text style={styles.addButtonText}>Add</Text>
             </TouchableOpacity>
           </View>
-        ))}
-      </View>
+          <View style={styles.skillsContainer}>
+            {additionalSkills.map((skill, index) => (
+              <TouchableOpacity
+                key={index}
+                style={[styles.skillChip, styles.additionalSkill]}
+                onPress={() => removeSkill(skill)}
+              >
+                <Text style={styles.skillText}>{skill} ×</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
 
-      {/* Generate CV Button */}
-      <TouchableOpacity
-        style={[styles.generateButton, loading && styles.disabledButton]}
-        onPress={handleGenerateCV}
-        disabled={loading}
-      >
-        {loading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.generateButtonText}>Generate Professional CV</Text>
-        )}
-      </TouchableOpacity>
+        {/* Education */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Education</Text>
+            <TouchableOpacity style={styles.addButton} onPress={addEducation}>
+              <Text style={styles.addButtonText}>Add Education</Text>
+            </TouchableOpacity>
+          </View>
+          {educationDetails.map((edu, index) => (
+            <View key={index} style={styles.itemContainer}>
+              <TextInput
+                style={styles.input}
+                value={edu.degree}
+                onChangeText={(value) => updateEducation(index, 'degree', value)}
+                placeholder="Degree (e.g., BSc Computer Science)"
+              />
+              <TextInput
+                style={styles.input}
+                value={edu.institution}
+                onChangeText={(value) => updateEducation(index, 'institution', value)}
+                placeholder="Institution"
+              />
+              <TextInput
+                style={styles.input}
+                value={edu.location}
+                onChangeText={(value) => updateEducation(index, 'location', value)}
+                placeholder="Location (optional)"
+              />
+              <View style={styles.dateRow}>
+                <TextInput
+                  style={[styles.input, styles.dateInput]}
+                  value={edu.startDate}
+                  onChangeText={(value) => updateEducation(index, 'startDate', value)}
+                  placeholder="Start Date"
+                />
+                <TextInput
+                  style={[styles.input, styles.dateInput]}
+                  value={edu.endDate}
+                  onChangeText={(value) => updateEducation(index, 'endDate', value)}
+                  placeholder="End Date"
+                />
+              </View>
+              <TouchableOpacity
+                style={styles.removeButton}
+                onPress={() => removeEducation(index)}
+              >
+                <Text style={styles.removeButtonText}>Remove</Text>
+              </TouchableOpacity>
+            </View>
+          ))}
+        </View>
 
-      {/* Download Button */}
-      {generatedCV && (
+        {/* Work Experience */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Work Experience</Text>
+            <TouchableOpacity style={styles.addButton} onPress={addWorkExperience}>
+              <Text style={styles.addButtonText}>Add Experience</Text>
+            </TouchableOpacity>
+          </View>
+          {workExperiences.map((exp, index) => (
+            <View key={index} style={styles.itemContainer}>
+              <TextInput
+                style={styles.input}
+                value={exp.position}
+                onChangeText={(value) => updateWorkExperience(index, 'position', value)}
+                placeholder="Position/Job Title"
+              />
+              <TextInput
+                style={styles.input}
+                value={exp.company}
+                onChangeText={(value) => updateWorkExperience(index, 'company', value)}
+                placeholder="Company/Organization"
+              />
+              <TextInput
+                style={styles.input}
+                value={exp.location}
+                onChangeText={(value) => updateWorkExperience(index, 'location', value)}
+                placeholder="Location (optional)"
+              />
+              <View style={styles.dateRow}>
+                <TextInput
+                  style={[styles.input, styles.dateInput]}
+                  value={exp.startDate}
+                  onChangeText={(value) => updateWorkExperience(index, 'startDate', value)}
+                  placeholder="Start Date"
+                />
+                <TextInput
+                  style={[styles.input, styles.dateInput]}
+                  value={exp.endDate}
+                  onChangeText={(value) => updateWorkExperience(index, 'endDate', value)}
+                  placeholder="End Date"
+                />
+              </View>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                value={exp.description}
+                onChangeText={(value) => updateWorkExperience(index, 'description', value)}
+                placeholder="Job description and achievements"
+                multiline
+                numberOfLines={4}
+              />
+              <TouchableOpacity
+                style={styles.removeButton}
+                onPress={() => removeWorkExperience(index)}
+              >
+                <Text style={styles.removeButtonText}>Remove</Text>
+              </TouchableOpacity>
+            </View>
+          ))}
+        </View>
+
+        {/* Projects */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Projects</Text>
+            <TouchableOpacity style={styles.addButton} onPress={addProject}>
+              <Text style={styles.addButtonText}>Add Project</Text>
+            </TouchableOpacity>
+          </View>
+          {projects.map((project, projectIndex) => (
+            <View key={projectIndex} style={styles.itemContainer}>
+              <TextInput
+                style={styles.input}
+                value={project.title}
+                onChangeText={(value) => updateProject(projectIndex, 'title', value)}
+                placeholder="Project Title"
+              />
+              <TextInput
+                style={styles.input}
+                value={project.description}
+                onChangeText={(value) => updateProject(projectIndex, 'description', value)}
+                placeholder="Brief Description"
+              />
+              <TextInput
+                style={styles.input}
+                value={project.technologies}
+                onChangeText={(value) => updateProject(projectIndex, 'technologies', value)}
+                placeholder="Technologies Used (comma separated)"
+              />
+              <TextInput
+                style={styles.input}
+                value={project.link}
+                onChangeText={(value) => updateProject(projectIndex, 'link', value)}
+                placeholder="Project Link/URL (optional)"
+              />
+              
+              <Text style={styles.subSectionTitle}>Project Details/Achievements:</Text>
+              {project.details.map((detail, detailIndex) => (
+                <View key={detailIndex} style={styles.inputRow}>
+                  <TextInput
+                    style={[styles.input, { flex: 1 }]}
+                    value={detail}
+                    onChangeText={(value) => updateProjectDetail(projectIndex, detailIndex, value)}
+                    placeholder="Project detail or achievement"
+                    multiline
+                  />
+                  <TouchableOpacity
+                    style={styles.miniRemoveButton}
+                    onPress={() => removeProjectDetail(projectIndex, detailIndex)}
+                  >
+                    <Text style={styles.removeButtonText}>×</Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
+              
+              <TouchableOpacity
+                style={styles.smallAddButton}
+                onPress={() => addProjectDetail(projectIndex)}
+              >
+                <Text style={styles.addButtonText}>Add Detail</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={styles.removeButton}
+                onPress={() => removeProject(projectIndex)}
+              >
+                <Text style={styles.removeButtonText}>Remove Project</Text>
+              </TouchableOpacity>
+            </View>
+          ))}
+        </View>
+
+        {/* Certifications */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Certifications</Text>
+            <TouchableOpacity style={styles.addButton} onPress={addCertification}>
+              <Text style={styles.addButtonText}>Add Certification</Text>
+            </TouchableOpacity>
+          </View>
+          {certifications.map((cert, index) => (
+            <View key={index} style={styles.itemContainer}>
+              <TextInput
+                style={styles.input}
+                value={cert.title}
+                onChangeText={(value) => updateCertification(index, 'title', value)}
+                placeholder="Certification Title"
+              />
+              <TextInput
+                style={styles.input}
+                value={cert.issuer}
+                onChangeText={(value) => updateCertification(index, 'issuer', value)}
+                placeholder="Issuing Organization"
+              />
+              <TextInput
+                style={styles.input}
+                value={cert.date}
+                onChangeText={(value) => updateCertification(index, 'date', value)}
+                placeholder="Date Obtained"
+              />
+              <TextInput
+                style={styles.input}
+                value={cert.link}
+                onChangeText={(value) => updateCertification(index, 'link', value)}
+                placeholder="Certification Link/URL (optional)"
+              />
+              <TouchableOpacity
+                style={styles.removeButton}
+                onPress={() => removeCertification(index)}
+              >
+                <Text style={styles.removeButtonText}>Remove</Text>
+              </TouchableOpacity>
+            </View>
+          ))}
+        </View>
+
+        {/* Generate CV Button */}
         <TouchableOpacity
-          style={styles.downloadButton}
-          onPress={handleDownloadCV}
+          style={[styles.generateButton, loading && styles.disabledButton]}
+          onPress={handleGenerateCV}
+          disabled={loading}
         >
-          <Text style={styles.downloadButtonText}>Download PDF</Text>
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.generateButtonText}>Generate Professional CV</Text>
+          )}
         </TouchableOpacity>
-      )}
 
-      <View style={{ height: 50 }} />
-    </ScrollView>
+        {/* Download Button */}
+        {generatedCV && (
+          <TouchableOpacity
+            style={styles.downloadButton}
+            onPress={handleDownloadCV}
+          >
+            <Text style={styles.downloadButtonText}>Download PDF</Text>
+          </TouchableOpacity>
+        )}
+
+        <View style={{ height: 50 }} />
+      </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
     backgroundColor: '#f5f5f5',
+  },
+  scrollContainer: {
+    flex: 1,
+    padding: 20,
   },
   loadingContainer: {
     flex: 1,

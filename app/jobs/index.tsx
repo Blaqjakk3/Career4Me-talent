@@ -23,6 +23,7 @@ import {
   Query
 } from '../../lib/appwrite'
 import debounce from 'lodash/debounce'
+import Header from '@/components/Header'
 
 // Types
 type Job = {
@@ -570,41 +571,20 @@ const Jobs = () => {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f9fafb' }}>
       {/* Header */}
-      <View style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingHorizontal: 20,
-        paddingVertical: 16,
-        backgroundColor: 'white',
-        borderBottomWidth: 1,
-        borderBottomColor: '#f3f4f6',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 8,
-        elevation: 2,
-      }}>
+      <View style={{ position: 'relative' }}>
+        <Header
+          title="Job Opportunities"
+          onBackPress={() => router.back()}
+        />
         <TouchableOpacity
-          style={{ 
-            padding: 8, 
-            borderRadius: 12,
-            backgroundColor: '#f9fafb'
-          }}
-          onPress={() => router.back()}
-        >
-          <Ionicons name="arrow-back" size={22} color="#333" />
-        </TouchableOpacity>
-        <Text style={{
-          fontSize: 18,
-          fontWeight: '700',
-          color: '#1f2937'
-        }}>Job Opportunities</Text>
-        <TouchableOpacity
-          style={{ 
-            padding: 8, 
-            borderRadius: 12,
-            backgroundColor: '#f9fafb'
+          style={{
+            position: 'absolute',
+            right: 16,
+            top: 10,
+            padding: 8,
+            borderRadius: 20,
+            backgroundColor: '#f9fafb',
+            zIndex: 2,
           }}
           onPress={() => router.push('/jobs/savedjobs')}
         >

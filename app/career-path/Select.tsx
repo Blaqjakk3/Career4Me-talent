@@ -3,28 +3,19 @@ import React from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import CareerPathCard from '@/components/CareerCard';
+import Header from '@/components/Header';
 
+const handleBackPress = () => {
+    router.back();
+  };
 const CareerDiscovery: React.FC = () => {
   return (
-    <View className="flex-1 bg-white p-4">
-      {/* Header */}
-      <View className="flex-row items-center mb-6">
-        <TouchableOpacity 
-          className="p-2 rounded-full bg-gray-50" 
-          onPress={() => router.back()}
-          accessibilityLabel="Go back"
-        >
-          {/* Replace ArrowLeft with Ionicons */}
-          <Ionicons name="arrow-back" size={24} color="#333" />
-        </TouchableOpacity>
-        <View className="flex-1 items-center">
-          <Text className="text-lg font-bold text-gray-800">Career Discovery</Text>
-        </View>
-        <View style={{ width: 40 }}>{/* Spacer for balanced layout */}</View>
-      </View>
+    <View className="flex-1 bg-white ">
+     
+      <Header title="Career Discovery" onBackPress={handleBackPress} />
 
       {/* Screen Content */}
-      <View className="px-2">
+      <View className="p-4">
         <View className="mb-4">
           <Text className="text-3xl font-bold text-gray-800">Discover Your</Text>
           <Text className="text-3xl font-bold text-[#5badec]">Perfect Career</Text>

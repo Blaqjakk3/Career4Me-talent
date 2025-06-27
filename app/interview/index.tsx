@@ -4,6 +4,8 @@ import CVUploadComponent from '@/components/CVUploadComponent';
 import AnalysisResultsComponent from '@/components/AnalysisResultsComponent';
 import { pickCVDocument, analyzeCVWithRetry } from '../../lib/gemini';
 import { getCurrentUser } from '../../lib/appwrite';
+import { router } from 'expo-router';
+import Header from '@/components/Header';
 
 const CVAnalysisScreen = () => {
   const [isUploading, setIsUploading] = useState(false);
@@ -54,8 +56,13 @@ const CVAnalysisScreen = () => {
     }
   };
 
+  const handleBackPress = () => {
+    router.back();
+  };
+
   return (
     <ScrollView style={styles.container}>
+      <Header title="CV Analysis" onBackPress={handleBackPress} />
       <View style={styles.content}>
         {!analysis ? (
           <CVUploadComponent

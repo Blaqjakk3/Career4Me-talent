@@ -5,6 +5,7 @@ import CareerCard from '@/components/careerpathcard';
 import { databases, Query, config } from '@/lib/appwrite';
 import { router } from 'expo-router';
 import Toast from '@/components/Toast';
+import Header from '@/components/Header';
 
 const CareerBrowse = () => {
   const [industries, setIndustries] = useState<string[]>([]);
@@ -92,6 +93,10 @@ const CareerBrowse = () => {
     router.push('/SavedPaths');
   };
 
+  const handleBackPress = () => {
+    router.back();
+  };
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f9fafb' }}>
       {/* Toast notification */}
@@ -102,29 +107,29 @@ const CareerBrowse = () => {
         onHide={() => setToastVisible(false)}
       />
 
-      <View style={{ padding: 12, backgroundColor: '#f9fafb' }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-          <TouchableOpacity
-            style={{ padding: 6, borderRadius: 9999, backgroundColor: '#f9fafb' }}
-            onPress={() => router.back()}
-            accessibilityLabel="Go back"
-          >
-            <Ionicons name="arrow-back" size={22} color="#333" />
-          </TouchableOpacity>
-          <View style={{ flex: 1, alignItems: 'center' }}>
-            <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#1f2937' }}>
-              Career Browse
-            </Text>
-          </View>
-          <TouchableOpacity
-            style={{ padding: 6, borderRadius: 9999, backgroundColor: '#f9fafb' }}
-            onPress={navigateToSavedPaths}
-            accessibilityLabel="View saved paths"
-          >
-            <Ionicons name="bookmark-outline" size={20} color="#5badec" />
-          </TouchableOpacity>
+      {/* Header with back button and title */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff' }}>
+        <View style={{ flex: 1 }}>
+          <Header title="Career Browse" onBackPress={handleBackPress} />
         </View>
+        <TouchableOpacity
+          style={{
+            position: 'absolute',
+            right: 16,
+            top: 10,
+            padding: 6,
+            borderRadius: 9999,
+            backgroundColor: '#fff',
+            zIndex: 2,
+          }}
+          onPress={navigateToSavedPaths}
+          accessibilityLabel="View saved paths"
+        >
+          <Ionicons name="bookmark-outline" size={20} color="#5badec" />
+        </TouchableOpacity>
+      </View>
 
+      <View style={{ padding: 12, backgroundColor: '#f9fafb' }}>
         <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#111827', marginBottom: 4 }}>
           Career Paths
         </Text>
@@ -134,17 +139,17 @@ const CareerBrowse = () => {
         </Text>
 
         <View style={{ flexDirection: 'row', gap: 8, marginBottom: 10 }}>
-          <View style={{ 
-            flex: 1, 
-            flexDirection: 'row', 
-            alignItems: 'center', 
-            backgroundColor: 'white', 
-            borderRadius: 8, 
-            padding: 6, 
-            shadowColor: '#000', 
-            shadowOffset: { width: 0, height: 1 }, 
-            shadowOpacity: 0.05, 
-            shadowRadius: 1 
+          <View style={{
+            flex: 1,
+            flexDirection: 'row',
+            alignItems: 'center',
+            backgroundColor: 'white',
+            borderRadius: 8,
+            padding: 6,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 1 },
+            shadowOpacity: 0.05,
+            shadowRadius: 1
           }}>
             <TextInput
               style={{ flex: 1, color: '#374151', marginRight: 8, fontSize: 13 }}
@@ -157,11 +162,11 @@ const CareerBrowse = () => {
             </TouchableOpacity>
           </View>
           <TouchableOpacity
-            style={{ 
-              backgroundColor: '#5badec', 
-              borderRadius: 8, 
-              paddingHorizontal: 10, 
-              justifyContent: 'center' 
+            style={{
+              backgroundColor: '#5badec',
+              borderRadius: 8,
+              paddingHorizontal: 10,
+              justifyContent: 'center'
             }}
             onPress={() => router.push('/CareerSurvey')}
           >
@@ -172,12 +177,12 @@ const CareerBrowse = () => {
         </View>
       </View>
 
-      <View style={{ 
-        backgroundColor: '#f9fafb', 
-        paddingHorizontal: 12, 
-        paddingBottom: 6, 
-        borderBottomWidth: 1, 
-        borderBottomColor: '#e5e7eb' 
+      <View style={{
+        backgroundColor: '#f9fafb',
+        paddingHorizontal: 12,
+        paddingBottom: 6,
+        borderBottomWidth: 1,
+        borderBottomColor: '#e5e7eb'
       }}>
         <ScrollView
           horizontal
@@ -210,11 +215,11 @@ const CareerBrowse = () => {
 
       <View style={{ flex: 1, paddingHorizontal: 12, paddingTop: 8, paddingBottom: 12 }}>
         {loading ? (
-          <View style={{ 
-            flex: 1, 
-            justifyContent: 'center', 
-            alignItems: 'center', 
-            paddingVertical: 20 
+          <View style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            paddingVertical: 20
           }}>
             <ActivityIndicator size="large" color="#5badec" />
             <Text style={{ marginTop: 8, color: '#6b7280' }}>
@@ -222,11 +227,11 @@ const CareerBrowse = () => {
             </Text>
           </View>
         ) : careerPaths.length === 0 ? (
-          <View style={{ 
-            flex: 1, 
-            justifyContent: 'center', 
-            alignItems: 'center', 
-            paddingVertical: 20 
+          <View style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            paddingVertical: 20
           }}>
             <MaterialIcons name="search-off" size={50} color="#9CA3AF" />
             <Text style={{ marginTop: 8, color: '#6b7280' }}>

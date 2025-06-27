@@ -26,7 +26,7 @@ import {
   saveJob,
   isJobSaved
 } from '../../../lib/appwrite';
-
+import Header from '@/components/Header';
 
 // Define types
 type Job = {
@@ -438,46 +438,14 @@ const JobDetails = () => {
       </SafeAreaView>
     );
   }
+  const handleBackPress = () => {
+    router.back();
+  };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f9fafb' }}>
       {/* Header */}
-      <View style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingHorizontal: 20,
-        paddingVertical: 16,
-        backgroundColor: 'white',
-        borderBottomWidth: 1,
-        borderBottomColor: '#f3f4f6',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 8,
-        elevation: 2,
-      }}>
-        <TouchableOpacity
-          style={{ 
-            padding: 8, 
-            borderRadius: 12,
-            backgroundColor: '#f9fafb'
-          }}
-          onPress={() => router.back()}
-          accessibilityLabel="Go back"
-        >
-          <Ionicons name="arrow-back" size={22} color="#333" />
-        </TouchableOpacity>
-        <View style={{ flex: 1, alignItems: 'center' }}>
-          <Text style={{
-            fontSize: 18,
-            fontWeight: '700',
-            color: '#1f2937'
-          }}>Job Details</Text>
-        </View>
-        {/* Empty view to maintain center alignment */}
-        <View style={{ width: 38 }} />
-      </View>
+      <Header title="Job Details" onBackPress={handleBackPress} />
 
       <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
         {/* Enhanced Job Header */}

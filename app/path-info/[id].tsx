@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
 import ConfettiCannon from 'react-native-confetti-cannon';
+import Header from '@/components/Header';
 
 interface CareerPath {
   $id: string;
@@ -408,6 +409,9 @@ const PathInfo: React.FC = () => {
       }}>{text}</Text>
     </View>
   );
+  const handleBackPress = () => {
+    router.back();
+  };
 
   const Tag: React.FC<TagProps> = ({ text, type = "default" }) => {
     const tagStyle = {
@@ -746,40 +750,7 @@ const PathInfo: React.FC = () => {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F9FAFB' }}>
-      {/* Header */}
-      <View style={{ 
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 16,
-        paddingVertical: 12,
-        borderBottomWidth: 1,
-        borderBottomColor: '#E5E7EB',
-        backgroundColor: 'white',
-      }}>
-        <TouchableOpacity
-          style={{ 
-            padding: 8,
-            borderRadius: 9999,
-            backgroundColor: '#F3F4F6',
-          }}
-          onPress={() => router.back()}
-          accessibilityLabel="Go back"
-        >
-          <Ionicons name="arrow-back" size={24} color="#374151" />
-        </TouchableOpacity>
-        <View style={{ 
-          flex: 1,
-          alignItems: 'center',
-        }}>
-          <Text style={{ 
-            fontSize: 16,
-            fontWeight: '600',
-            color: '#5badec',
-          }}>{data.title}</Text>
-        </View>
-        <View style={{ width: 40 }} />
-      </View>
-      
+      <Header title="Path Details" onBackPress={handleBackPress} />
       <ScrollView 
         style={{ flex: 1 }} 
         showsVerticalScrollIndicator={false}

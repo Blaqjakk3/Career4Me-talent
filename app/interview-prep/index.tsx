@@ -1,13 +1,17 @@
 import { View, SafeAreaView, StyleSheet } from 'react-native'
 import React from 'react'
-import InterviewPrepHeader from '@/components/InterviewPrepHeader'
 import InterviewQuestions from '@/components/InterviewQuestions'
 import { router } from 'expo-router';
+import Header from '@/components/Header';
 
+
+const handleBackPress = () => {
+    router.back();
+  };
 const Interviewprep = () => {
   return (
      <SafeAreaView style={styles.container}>
-      <InterviewPrepHeader onBackPress={() => router.back()} />
+      <Header title="Interview Practice" onBackPress={handleBackPress} />
       <View style={styles.content}>
         <InterviewQuestions />
       </View>

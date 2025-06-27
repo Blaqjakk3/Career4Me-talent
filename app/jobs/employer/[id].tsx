@@ -11,6 +11,7 @@ import {
 import React, { useEffect, useState } from 'react';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Feather, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import Header from '@/components/Header';
 
 import {
   config,
@@ -101,6 +102,10 @@ const EmployerDetails = () => {
 
   const handleJobPress = (jobId: string) => {
     router.push(`/jobs/jobsdetails/${jobId}`);
+  };
+
+  const handleBackPress = () => {
+    router.back();
   };
 
   const InfoCard = ({ 
@@ -371,42 +376,7 @@ const EmployerDetails = () => {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f9fafb' }}>
-      {/* Enhanced Header */}
-      <View style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingHorizontal: 20,
-        paddingVertical: 16,
-        backgroundColor: 'white',
-        borderBottomWidth: 1,
-        borderBottomColor: '#f3f4f6',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 8,
-        elevation: 2,
-      }}>
-        <TouchableOpacity
-          style={{ 
-            padding: 8, 
-            borderRadius: 12,
-            backgroundColor: '#f9fafb'
-          }}
-          onPress={() => router.back()}
-          accessibilityLabel="Go back"
-        >
-          <Feather name="arrow-left" size={22} color="#333" />
-        </TouchableOpacity>
-        <View style={{ flex: 1, alignItems: 'center' }}>
-          <Text style={{
-            fontSize: 18,
-            fontWeight: '700',
-            color: '#1f2937'
-          }}>Company Profile</Text>
-        </View>
-        <View style={{ width: 38 }} />
-      </View>
+      <Header title="Company Profile" onBackPress={handleBackPress} />
 
       <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
         {/* Enhanced Company Header */}

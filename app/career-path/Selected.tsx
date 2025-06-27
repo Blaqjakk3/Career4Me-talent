@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, Alert } fr
 import { Ionicons } from '@expo/vector-icons'
 import { router } from 'expo-router'
 import { getCareerPathById } from '@/lib/appwrite'
+import Header from '@/components/Header'
 
 interface SelectedProps {
   selectedPathId: string
@@ -87,6 +88,8 @@ const Selected: React.FC<SelectedProps> = ({ selectedPathId }) => {
     )
   }
 
+  
+
   if (!careerPath) {
     return (
       <View className="flex-1 bg-white justify-center items-center p-4">
@@ -103,23 +106,14 @@ const Selected: React.FC<SelectedProps> = ({ selectedPathId }) => {
     )
   }
 
+  const handleBackPress = () => {
+    router.back();
+  };
+
   return (
     <View className="flex-1 bg-white">
       {/* Header */}
-      <View className="flex-row items-center p-4 bg-white border-b border-gray-200">
-        <TouchableOpacity 
-          className="p-2 rounded-full bg-gray-50" 
-          onPress={() => router.back()}
-          accessibilityLabel="Go back"
-        >
-          {/* Replace ArrowLeft with Ionicons arrow-back */}
-          <Ionicons name="arrow-back" size={24} color="#333" />
-        </TouchableOpacity>
-        <View className="flex-1 items-center">
-          <Text className="text-lg font-bold text-gray-800">Your Career Path</Text>
-        </View>
-        <View style={{ width: 40 }}>{/* Spacer for balanced layout */}</View>
-      </View>
+      <Header title="Your Career Path" onBackPress={handleBackPress} />
 
       <ScrollView className="flex-1 p-4">
         {/* Career Path Header */}

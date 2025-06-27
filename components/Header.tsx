@@ -2,28 +2,31 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-interface LearningHeaderProps {
-  onBackPress: () => void;
+interface HeaderProps {
+  onBackPress?: () => void;
+  title: string;
 }
 
-const LearningHeader: React.FC<LearningHeaderProps> = ({ onBackPress }) => {
+const Header: React.FC<HeaderProps> = ({ onBackPress, title }) => {
   return (
     <View style={styles.headerContainer}>
-      <TouchableOpacity
-        style={styles.backButton}
-        onPress={onBackPress}
-        accessibilityLabel="Go back"
-        activeOpacity={0.7}
-      >
-        {/* Use Ionicons for the back arrow */}
-        <Ionicons name="arrow-back" size={24} color="#333" />
-      </TouchableOpacity>
-      
+      {onBackPress ? (
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={onBackPress}
+          accessibilityLabel="Go back"
+          activeOpacity={0.7}
+        >
+          <Ionicons name="arrow-back" size={24} color="#333" />
+        </TouchableOpacity>
+      ) : (
+        <View style={styles.spacer} />
+      )}
+
       <View style={styles.titleContainer}>
-        <Text style={styles.title}>Learning Roadmap</Text>
-        <Text style={styles.subtitle}>& Resources</Text>
+        <Text style={styles.title}>{title}</Text>
       </View>
-      
+
       <View style={styles.spacer} />
     </View>
   );
@@ -34,14 +37,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 8,
-    backgroundColor: '#f8f9fa',
+    paddingTop: 10,         // Reduced from 16 to 10
+    paddingBottom: 6,       // Reduced from 8 to 6
+    backgroundColor: '#fff',
   },
   backButton: {
     padding: 8,
     borderRadius: 20,
-    backgroundColor: '#fff',
+    backgroundColor: '#5badec', // Updated to requested color
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -72,4 +75,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default LearningHeader;
+export default Header;

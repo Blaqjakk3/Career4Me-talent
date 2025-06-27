@@ -22,6 +22,7 @@ import {
   config,
   Query
 } from '../../../lib/appwrite'
+import Header from '@/components/Header'
 
 // Define types
 type Job = {
@@ -119,6 +120,10 @@ const SavedJobs = () => {
       console.error('Error fetching employers:', error)
     }
   }
+
+  const handleBackPress = () => {
+    router.back();
+  };
 
   const handleUnsaveJob = async (jobId: string) => {
     try {
@@ -237,24 +242,8 @@ const SavedJobs = () => {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f9fafb' }}>
-      {/* Header */}
+     <Header title="Saved Jobs" onBackPress={handleBackPress} />
       <View style={{ padding: 16, backgroundColor: '#f9fafb' }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
-          <TouchableOpacity
-            style={{ padding: 6, borderRadius: 9999, backgroundColor: '#f9fafb' }}
-            onPress={() => router.back()}
-            accessibilityLabel="Go back"
-          >
-            <Ionicons name="arrow-back" size={22} color="#333" />
-          </TouchableOpacity>
-          <View style={{ flex: 1, alignItems: 'center' }}>
-            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#1f2937' }}>
-              Saved Jobs
-            </Text>
-          </View>
-          <View style={{ width: 34 }} />
-        </View>
-
         {/* Job count */}
         <Text style={{ fontSize: 14, color: '#6b7280', textAlign: 'center' }}>
           {savedJobs.length} saved job{savedJobs.length !== 1 ? 's' : ''}

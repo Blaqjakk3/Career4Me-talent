@@ -4,6 +4,7 @@ import { Ionicons, Feather } from '@expo/vector-icons'; // Updated import
 import { router } from 'expo-router';
 import CareerCard from '@/components/careerpathcard';
 import { getSavedCareerPaths } from '@/lib/appwrite';
+import Header from '@/components/Header';
 
 const SavedPaths = () => {
   const [savedPaths, setSavedPaths] = useState<any[]>([]);
@@ -25,22 +26,15 @@ const SavedPaths = () => {
     }
   };
 
+  const handleBackPress = () => {
+    router.back();
+  };
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f9fafb' }}>
+      <Header title="Saved Career Paths" onBackPress={handleBackPress} />
       <View style={{ padding: 16, backgroundColor: '#f9fafb' }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
-          <TouchableOpacity
-            style={{ padding: 8, borderRadius: 9999, backgroundColor: '#f9fafb' }}
-            onPress={() => router.back()}
-            accessibilityLabel="Go back"
-          >
-            <Ionicons name="arrow-back" size={24} color="#333" /> {/* Changed icon */}
-          </TouchableOpacity>
-          <View style={{ flex: 1, alignItems: 'center' }}>
-            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#1f2937' }}>Saved Career Paths</Text>
-          </View>
-          <View style={{ width: 40 }} />
-        </View>
+        
 
         <Text style={{ fontSize: 30, fontWeight: 'bold', color: '#111827', marginBottom: 8 }}>Your Saved Paths</Text>
         <Text style={{ color: '#4b5563', marginBottom: 16 }}>
