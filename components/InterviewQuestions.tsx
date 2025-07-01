@@ -1,3 +1,4 @@
+// InterviewQuestions.tsx - Updated version
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, Alert, RefreshControl } from 'react-native';
 import { Ionicons, MaterialCommunityIcons, Feather } from '@expo/vector-icons';
@@ -15,13 +16,24 @@ interface InterviewQuestionsResponse {
   questions: InterviewQuestion[];
   metadata: {
     totalQuestions: number;
+    category: string;
     talent: { id: string; fullname: string; careerStage: string };
     careerPath: { id: string; title: string } | null;
     generatedAt: string;
   };
 }
 
-// In-memory storage for questions (you could also use AsyncStorage for persistence)
+const QUESTION_CATEGORIES = [
+  { id: 'personal', name: 'Personal Background' },
+  { id: 'career', name: 'Career Goals' },
+  { id: 'company', name: 'Company Fit' },
+  { id: 'technical', name: 'Technical Skills' },
+  { id: 'behavioral', name: 'Behavioral' },
+  { id: 'problem-solving', name: 'Problem Solving' },
+  { id: 'teamwork', name: 'Teamwork' }
+];
+
+// In-memory storage for questions
 let cachedQuestions: InterviewQuestion[] = [];
 let cachedMetadata: InterviewQuestionsResponse['metadata'] | null = null;
 let cachedExpandedQuestions: Set<number> = new Set();
@@ -36,6 +48,7 @@ const InterviewQuestions: React.FC = () => {
   const [showTips, setShowTips] = useState<Set<number>>(cachedShowTips);
   const [responseMeta, setResponseMeta] = useState<InterviewQuestionsResponse['metadata'] | null>(cachedMetadata);
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   // Update cache when state changes
   useEffect(() => {
@@ -46,7 +59,7 @@ const InterviewQuestions: React.FC = () => {
     cachedShowTips = showTips;
   }, [questions, responseMeta, expandedQuestions, viewedAnswers, showTips]);
 
-  const generateQuestions = async () => {
+  const generateQuestions = async (category: string) => {
     try {
       setIsLoading(true);
       const user = await getCurrentUser();
@@ -54,7 +67,7 @@ const InterviewQuestions: React.FC = () => {
         Alert.alert('Error', 'Please log in to generate interview questions');
         return;
       }
-      const response = await generateInterviewQuestionsWithRetry(user.talentId, 3);
+      const response = await generateInterviewQuestionsWithRetry(user.talentId, category, 3);
       setQuestions(response.questions);
       setResponseMeta(response.metadata);
       // Reset UI state for new questions
@@ -76,13 +89,16 @@ const InterviewQuestions: React.FC = () => {
   };
 
   const onRefresh = async () => {
+    if (!selectedCategory) return;
     setRefreshing(true);
-    await generateQuestions();
+    await generateQuestions(selectedCategory);
     setRefreshing(false);
   };
 
-  // Remove the automatic generation on mount
-  // useEffect(() => { generateQuestions(); }, []);
+  const handleCategorySelect = (category: string) => {
+    setSelectedCategory(category);
+    generateQuestions(category);
+  };
 
   if (isLoading && questions.length === 0) {
     return (
@@ -164,37 +180,71 @@ const InterviewQuestions: React.FC = () => {
             <MaterialCommunityIcons name="brain" size={24} color="#5badec" />
             <Text style={styles.title}>Interview Practice</Text>
           </View>
-          <TouchableOpacity style={styles.refreshButton} onPress={generateQuestions} disabled={isLoading}>
-            {isLoading ? (
-              <ActivityIndicator size="small" color="#5badec" />
-            ) : (
-              <Ionicons name="refresh" size={20} color="#5badec" />
-            )}
-          </TouchableOpacity>
+          {selectedCategory && (
+            <TouchableOpacity style={styles.refreshButton} onPress={() => generateQuestions(selectedCategory)} disabled={isLoading}>
+              {isLoading ? (
+                <ActivityIndicator size="small" color="#5badec" />
+              ) : (
+                <Ionicons name="refresh" size={20} color="#5badec" />
+              )}
+            </TouchableOpacity>
+          )}
         </View>
 
+        <Text style={styles.subtitle}>Select a question category:</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoriesContainer}>
+          {QUESTION_CATEGORIES.map((category) => (
+            <TouchableOpacity
+              key={category.id}
+              style={[
+                styles.categoryButton,
+                selectedCategory === category.id && styles.selectedCategoryButton
+              ]}
+              onPress={() => handleCategorySelect(category.id)}
+            >
+              <Text style={[
+                styles.categoryButtonText,
+                selectedCategory === category.id && styles.selectedCategoryButtonText
+              ]}>
+                {category.name}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
         {responseMeta && (
-          <>
-            <View style={styles.userInfo}>
-              <Text style={styles.userName}>{responseMeta.talent.fullname}</Text>
-              <Text style={styles.userStage}>{responseMeta.talent.careerStage}</Text>
-              {responseMeta.careerPath && <Text style={styles.careerPath}>{responseMeta.careerPath.title}</Text>}
+          <View style={styles.userInfo}>
+            <Text style={styles.userName}>{responseMeta.talent.fullname}</Text>
+            <Text style={styles.userStage}>{responseMeta.talent.careerStage}</Text>
+            {responseMeta.careerPath && <Text style={styles.careerPath}>{responseMeta.careerPath.title}</Text>}
+            <Text style={styles.categoryLabel}>Category: {responseMeta.category}</Text>
+          </View>
+        )}
+
+        {selectedCategory && !responseMeta && (
+          <View style={styles.tipsContainer}>
+            <Text style={styles.tipsTitle}>Interview Preparation Tips</Text>
+            <View style={styles.tipItem}>
+              <Text style={styles.tipNumber}>1.</Text>
+              <Text style={styles.tipText}>Research the company and role thoroughly</Text>
             </View>
-            <View style={styles.statsContainer}>
-              <View style={styles.statItem}>
-                <Text style={styles.statNumber}>{responseMeta.totalQuestions}</Text>
-                <Text style={styles.statLabel}>Questions</Text>
-              </View>
-              <View style={styles.statItem}>
-                <Text style={styles.statNumber}>{viewedAnswers.size}</Text>
-                <Text style={styles.statLabel}>Viewed</Text>
-              </View>
-              <View style={styles.statItem}>
-                <Text style={styles.statNumber}>{showTips.size}</Text>
-                <Text style={styles.statLabel}>Tips Shown</Text>
-              </View>
+            <View style={styles.tipItem}>
+              <Text style={styles.tipNumber}>2.</Text>
+              <Text style={styles.tipText}>Practice your answers out loud</Text>
             </View>
-          </>
+            <View style={styles.tipItem}>
+              <Text style={styles.tipNumber}>3.</Text>
+              <Text style={styles.tipText}>Prepare examples that demonstrate your skills</Text>
+            </View>
+            <View style={styles.tipItem}>
+              <Text style={styles.tipNumber}>4.</Text>
+              <Text style={styles.tipText}>Dress appropriately for the interview</Text>
+            </View>
+            <View style={styles.tipItem}>
+              <Text style={styles.tipNumber}>5.</Text>
+              <Text style={styles.tipText}>Prepare thoughtful questions to ask the interviewer</Text>
+            </View>
+          </View>
         )}
       </View>
 
@@ -202,14 +252,19 @@ const InterviewQuestions: React.FC = () => {
         {questions.map(renderQuestionCard)}
       </View>
 
-      {questions.length === 0 && !isLoading && (
+      {!selectedCategory && (
+        <View style={styles.emptyState}>
+          <MaterialCommunityIcons name="brain" size={48} color="#9ca3af" />
+          <Text style={styles.emptyStateTitle}>Select a question category</Text>
+          <Text style={styles.emptyStateText}>Choose a category to generate personalized interview questions</Text>
+        </View>
+      )}
+
+      {selectedCategory && questions.length === 0 && !isLoading && (
         <View style={styles.emptyState}>
           <MaterialCommunityIcons name="brain" size={48} color="#9ca3af" />
           <Text style={styles.emptyStateTitle}>No questions available</Text>
-          <Text style={styles.emptyStateText}>Generate personalized interview questions based on your profile</Text>
-          <TouchableOpacity style={styles.generateButton} onPress={generateQuestions}>
-            <Text style={styles.generateButtonText}>Generate Questions</Text>
-          </TouchableOpacity>
+          <Text style={styles.emptyStateText}>Press refresh to generate questions for {QUESTION_CATEGORIES.find(c => c.id === selectedCategory)?.name}</Text>
         </View>
       )}
     </ScrollView>
@@ -224,15 +279,31 @@ const styles = StyleSheet.create({
   headerContent: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
   headerTitle: { flexDirection: 'row', alignItems: 'center' },
   title: { fontSize: 22, fontWeight: '700', color: '#1f2937', marginLeft: 8 },
+  subtitle: { fontSize: 16, color: '#6b7280', marginBottom: 12 },
   refreshButton: { padding: 8, borderRadius: 8, backgroundColor: '#eff6ff' },
   userInfo: { marginBottom: 16 },
   userName: { fontSize: 16, fontWeight: '600', color: '#1f2937' },
   userStage: { fontSize: 14, color: '#5badec', marginTop: 2 },
   careerPath: { fontSize: 14, color: '#6b7280', marginTop: 2 },
-  statsContainer: { flexDirection: 'row', justifyContent: 'space-around', backgroundColor: '#f8f9fa', borderRadius: 12, padding: 16 },
-  statItem: { alignItems: 'center' },
-  statNumber: { fontSize: 20, fontWeight: '700', color: '#1f2937' },
-  statLabel: { fontSize: 12, color: '#6b7280', marginTop: 4 },
+  categoryLabel: { fontSize: 14, fontWeight: '600', color: '#1f2937', marginTop: 8 },
+  categoriesContainer: { marginBottom: 16 },
+  categoryButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: '#e5e7eb',
+    marginRight: 8
+  },
+  selectedCategoryButton: {
+    backgroundColor: '#5badec'
+  },
+  categoryButtonText: {
+    fontSize: 14,
+    color: '#4b5563'
+  },
+  selectedCategoryButtonText: {
+    color: '#fff'
+  },
   questionsContainer: { padding: 16 },
   questionCard: { backgroundColor: '#fff', borderRadius: 12, marginBottom: 12, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3, overflow: 'hidden' },
   questionHeader: { flexDirection: 'row', padding: 16, alignItems: 'flex-start' },
@@ -245,6 +316,7 @@ const styles = StyleSheet.create({
   tipsToggle: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, marginTop: 8 },
   tipsToggleText: { fontSize: 14, fontWeight: '500', color: '#f59e0b', marginLeft: 8 },
   tipsContainer: { backgroundColor: '#fffbeb', borderRadius: 8, padding: 12, marginBottom: 12, borderLeftWidth: 3, borderLeftColor: '#f59e0b' },
+  tipsTitle: { fontSize: 14, fontWeight: '600', color: '#92400e', marginBottom: 8 },
   tipItem: { flexDirection: 'row', marginBottom: 8 },
   tipNumber: { fontSize: 12, fontWeight: '600', color: '#92400e', marginRight: 8, marginTop: 1 },
   tipText: { fontSize: 12, color: '#92400e', lineHeight: 16, flex: 1 },
@@ -258,8 +330,6 @@ const styles = StyleSheet.create({
   emptyState: { alignItems: 'center', padding: 40 },
   emptyStateTitle: { fontSize: 18, fontWeight: '600', color: '#1f2937', marginTop: 16 },
   emptyStateText: { fontSize: 14, color: '#6b7280', textAlign: 'center', marginTop: 8, marginBottom: 24 },
-  generateButton: { backgroundColor: '#5badec', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 8 },
-  generateButtonText: { color: '#fff', fontWeight: '600', fontSize: 14 },
 });
 
 export default InterviewQuestions;

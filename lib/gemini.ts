@@ -23,6 +23,7 @@ interface InterviewQuestionsResponse {
   questions: InterviewQuestion[];
   metadata: {
     totalQuestions: number;
+    category: string;
     talent: {
       id: string;
       fullname: string;
@@ -215,9 +216,7 @@ export const analyzeCVDocument = async (
   try {
     console.log('Starting CV analysis for talentId:', talentId);
     
-    // ⚠️ IMPORTANT: Ensure you're passing the correct talentId field value
-    // This should be the same value used successfully in generateInterviewQuestions
-    // NOT the document $id from the talents collection
+    
     
     // Convert file to base64
     console.log('Converting file to base64...');
@@ -406,15 +405,22 @@ export const formatAnalysisForDisplay = (analysis: CVAnalysisResponse['analysis'
  * @param talentId - The talentId field value (NOT the document $id)
  * @returns Interview questions response
  */
+/**
+ * Generates interview questions for a talent with category support
+ * @param talentId - The talentId field value (NOT the document $id)
+ * @param category - The category of questions to generate
+ * @returns Interview questions response
+ */
 export const generateInterviewQuestions = async (
-  talentId: string
+  talentId: string,
+  category: string
 ): Promise<InterviewQuestionsResponse> => {
   try {
-    console.log('Calling interview questions function with talentId:', talentId);
+    console.log('Calling interview questions function with talentId:', talentId, 'and category:', category);
     
     const executionPromise = functions.createExecution(
-      'generateinterviewquestions',
-      JSON.stringify({ talentId }), // This should be the talentId field value
+      'generateinterviewquestions', // Make sure this matches your updated function ID
+      JSON.stringify({ talentId, category }), // Add category to the request
       false
     );
 
@@ -457,7 +463,7 @@ export const generateInterviewQuestions = async (
       throw new Error('No questions were generated');
     }
 
-    console.log(`Successfully received ${responseData.questions.length} questions`);
+    console.log(`Successfully received ${responseData.questions.length} questions for category ${responseData.metadata.category}`);
     return {
       questions: responseData.questions,
       metadata: responseData.metadata
@@ -478,16 +484,24 @@ export const generateInterviewQuestions = async (
   }
 };
 
+/**
+ * Generates interview questions with retry mechanism and category support
+ * @param talentId - The talentId field value (NOT the document $id)
+ * @param category - The category of questions to generate
+ * @param maxRetries - Maximum number of retry attempts
+ * @returns Interview questions response
+ */
 export const generateInterviewQuestionsWithRetry = async (
   talentId: string,
+  category: string,
   maxRetries: number = 3
 ): Promise<InterviewQuestionsResponse> => {
   let lastError: Error | null = null;
   
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      console.log(`Interview questions attempt ${attempt} of ${maxRetries}`);
-      const result = await generateInterviewQuestions(talentId);
+      console.log(`Interview questions attempt ${attempt} of ${maxRetries} for category ${category}`);
+      const result = await generateInterviewQuestions(talentId, category);
       console.log('Successfully generated interview questions:', result.metadata.totalQuestions, 'questions');
       return result;
       
@@ -512,6 +526,29 @@ export const generateInterviewQuestionsWithRetry = async (
   }
   
   throw new Error(`Failed to generate interview questions after ${maxRetries} attempts. ${lastError?.message || 'Unknown error'}`);
+};
+
+const VALID_CATEGORIES = [
+  'personal',
+  'career',
+  'company',
+  'technical',
+  'behavioral',
+  'problem-solving',
+  'teamwork'
+];
+
+/**
+ * Validates the interview question category
+ * @param category - The category to validate
+ * @returns boolean - True if valid
+ * @throws Error if invalid
+ */
+export const validateInterviewQuestionCategory = (category: string): boolean => {
+  if (!VALID_CATEGORIES.includes(category)) {
+    throw new Error(`Invalid category. Valid categories are: ${VALID_CATEGORIES.join(', ')}`);
+  }
+  return true;
 };
 
 export const generateProjects = async (
