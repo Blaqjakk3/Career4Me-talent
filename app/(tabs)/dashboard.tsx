@@ -12,16 +12,20 @@ const { width } = Dimensions.get('window');
 const Dashboard = () => {
   const [quote, setQuote] = useState<{quote: string; author: string} | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const { user, setUser } = useGlobalContext();
+  const { user, setUser, updateUser } = useGlobalContext();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
 
-        // Optionally, you can update the global user here if you want to always fetch fresh data
-        // const currentUser = await getCurrentUser();
-        // if (currentUser) setUser(currentUser);
+        // Always fetch fresh user data when dashboard loads
+        const currentUser = await getCurrentUser();
+        if (currentUser) {
+          setUser(currentUser);
+          // Also update AsyncStorage with fresh data
+          await updateUser(currentUser);
+        }
 
         const dailyQuote = await getDailyQuote();
         setQuote(dailyQuote);
@@ -35,8 +39,17 @@ const Dashboard = () => {
     fetchData();
   }, []);
 
-  // Use only the global user
-  const displayUser = user;
+  // Show loading state while fetching user data
+  if (loading || !user) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#5badec" />
+          <Text style={styles.loadingText}>Loading dashboard...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   const primaryActions = [
     { 
@@ -99,9 +112,9 @@ const Dashboard = () => {
             <View style={styles.headerContent}>
               <View style={styles.userSection}>
                 <View style={styles.avatarContainer}>
-                  {displayUser?.avatar ? (
+                  {user.avatar ? (
                     <Image 
-                      source={{ uri: displayUser.avatar }} 
+                      source={{ uri: user.avatar }} 
                       style={styles.avatar}
                     />
                   ) : (
@@ -114,10 +127,10 @@ const Dashboard = () => {
                 <View style={styles.userInfo}>
                   <Text style={styles.welcomeText}>Welcome back!</Text>
                   <Text style={styles.userName}>
-                    {displayUser?.fullname || 'Career Explorer'}
+                    {user.fullname || 'Career Explorer'}
                   </Text>
                   <Text style={styles.userRole}>
-                    {displayUser?.careerStage || 'Ready to grow'}
+                    {user.careerStage || 'Ready to grow'}
                   </Text>
                 </View>
               </View>
@@ -142,12 +155,7 @@ const Dashboard = () => {
               <Text style={styles.quoteLabel}>Daily Inspiration</Text>
             </View>
             
-            {loading ? (
-              <View style={styles.loadingContainer}>
-                <ActivityIndicator size="small" color="#5badec" />
-                <Text style={styles.loadingText}>Loading inspiration...</Text>
-              </View>
-            ) : quote ? (
+            {quote ? (
               <View style={styles.quoteContent}>
                 <Text style={styles.quoteText}>"{quote.quote}"</Text>
                 <Text style={styles.authorText}>— {quote.author}</Text>
@@ -233,6 +241,17 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingBottom: 32,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f8fafc',
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#64748b',
   },
   headerContainer: {
     marginBottom: 20,
@@ -366,17 +385,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#5badec',
-  },
-  loadingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
-  },
-  loadingText: {
-    marginLeft: 12,
-    fontSize: 14,
-    color: '#64748b',
   },
   quoteContent: {
     paddingVertical: 8,

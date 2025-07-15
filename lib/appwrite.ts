@@ -623,9 +623,19 @@ export const uploadAvatar = async (imageUri: string) => {
     if (currentUser.avatar && !currentUser.avatar.includes('avatars.appwrite.io')) {
       try {
         // Extract file ID from the old avatar URL
-        const oldFileId = currentUser.avatar.split('/').pop()?.split('?')[0];
-        if (oldFileId) {
-          await storage.deleteFile(config.storageId, oldFileId);
+        // Appwrite storage URLs typically look like: https://cloud.appwrite.io/v1/storage/buckets/[BUCKET_ID]/files/[FILE_ID]/view
+        const urlParts = currentUser.avatar.split('/');
+        const filesIndex = urlParts.indexOf('files');
+        
+        if (filesIndex !== -1 && filesIndex + 1 < urlParts.length) {
+          const oldFileId = urlParts[filesIndex + 1];
+          // Remove any query parameters
+          const cleanFileId = oldFileId.split('?')[0];
+          
+          if (cleanFileId && cleanFileId !== 'view') {
+            await storage.deleteFile(config.storageId, cleanFileId);
+            console.log('Old avatar deleted successfully');
+          }
         }
       } catch (error) {
         console.warn("Failed to delete old avatar:", error);
@@ -677,9 +687,19 @@ export const deleteAvatar = async () => {
     if (currentUser.avatar && !currentUser.avatar.includes('avatars.appwrite.io')) {
       try {
         // Extract file ID from the avatar URL
-        const fileId = currentUser.avatar.split('/').pop()?.split('?')[0];
-        if (fileId) {
-          await storage.deleteFile(config.storageId, fileId);
+        // Appwrite storage URLs typically look like: https://cloud.appwrite.io/v1/storage/buckets/[BUCKET_ID]/files/[FILE_ID]/view
+        const urlParts = currentUser.avatar.split('/');
+        const filesIndex = urlParts.indexOf('files');
+        
+        if (filesIndex !== -1 && filesIndex + 1 < urlParts.length) {
+          const fileId = urlParts[filesIndex + 1];
+          // Remove any query parameters
+          const cleanFileId = fileId.split('?')[0];
+          
+          if (cleanFileId && cleanFileId !== 'view') {
+            await storage.deleteFile(config.storageId, cleanFileId);
+            console.log('Avatar deleted successfully');
+          }
         }
       } catch (error) {
         console.warn("Failed to delete avatar file:", error);
