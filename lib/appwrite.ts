@@ -5,7 +5,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as FileSystem from 'expo-file-system';
 
 export const config = {
-  endpoint: 'https://cloud.appwrite.io/v1',
+  endpoint: 'https://fra.cloud.appwrite.io/v1',
   platform: 'com.career4me.talent',
   projectId: '67d074d0001dadc04f94',
   databaseId: 'career4me',
