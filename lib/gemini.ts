@@ -425,7 +425,7 @@ export const generateInterviewQuestions = async (
     );
 
     const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => reject(new Error('Client timeout: Function took too long to respond')), 20000);
+      setTimeout(() => reject(new Error('Client timeout: Function took too long to respond')), 60000);
     });
 
     const execution = await Promise.race([executionPromise, timeoutPromise]);
