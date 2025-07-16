@@ -83,8 +83,15 @@ const Dashboard = () => {
       title: 'CV Analysis', 
       icon: 'document-text',
       description: 'Get expert feedback on your resume',
-      key: 'interview',
-      href: '/interview'
+      key: 'analysis',
+      href: '/analysis'
+    },
+    { 
+      title: 'CV Generation', 
+      icon: 'create-outline',
+      description: 'Create a professional CV in minutes',
+      key: 'cvgeneration',
+      href: 'cvgeneration'
     },
     { 
       title: 'Interview Prep', 
@@ -92,7 +99,7 @@ const Dashboard = () => {
       description: 'Practice with AI-powered mock interviews',
       key: 'interview-prep',
       href: '/interview-prep'
-    }
+    },
   ];
 
   return (
