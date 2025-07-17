@@ -1,597 +1,169 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   ScrollView,
-  Alert,
-  ActivityIndicator,
   StyleSheet
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import Header from '@/components/Header';
-import { getCurrentUser } from '@/lib/appwrite';
-import { 
-  generateCVWithRetry, 
-  downloadCV, 
-  validateCVRequest,
-  formatCVDate,
-  type CVGenerationRequest 
-} from '@/lib/gemini';
 
-interface Education {
-  degree: string;
-  institution: string;
-  startDate: string;
-  endDate: string;
-  location?: string;
-}
-
-interface WorkExperience {
-  company: string;
-  position: string;
-  startDate: string;
-  endDate: string;
-  description: string;
-  location?: string;
-}
-
-interface Project {
-  title: string;
-  description: string;
-  technologies: string;
-  link?: string;
-  details: string[];
-}
-
-interface Certification {
-  title: string;
-  issuer: string;
-  date: string;
-  link?: string;
-}
-
-interface ContactInfo {
-  github?: string;
-  linkedin?: string;
-  portfolio?: string;
-  phone?: string;
-}
-
-const CVGenerator: React.FC = () => {
+const CVWelcome: React.FC = () => {
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
-  const [additionalSkills, setAdditionalSkills] = useState<string[]>([]);
-  const [newSkill, setNewSkill] = useState('');
-  const [educationDetails, setEducationDetails] = useState<Education[]>([]);
-  const [workExperiences, setWorkExperiences] = useState<WorkExperience[]>([]);
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [certifications, setCertifications] = useState<Certification[]>([]);
-  const [contactInfo, setContactInfo] = useState<ContactInfo>({});
-  const [generatedCV, setGeneratedCV] = useState<string | null>(null);
-
-  useEffect(() => {
-    loadUserData();
-  }, []);
-
-  const loadUserData = async () => {
-    try {
-      const currentUser = await getCurrentUser();
-      if (currentUser) {
-        setUser(currentUser);
-        // Initialize empty education (don't pre-populate with existing degrees to avoid duplication)
-        setEducationDetails([]);
-      }
-    } catch (error) {
-      Alert.alert('Error', 'Failed to load user data');
-    }
-  };
 
   const handleBackPress = () => {
     router.back();
   };
 
-  const addSkill = () => {
-    if (newSkill.trim() && !additionalSkills.includes(newSkill.trim())) {
-      setAdditionalSkills([...additionalSkills, newSkill.trim()]);
-      setNewSkill('');
+  const handleGetStarted = () => {
+    router.push('/cvgeneration/generator');
+  };
+
+  const benefits = [
+    {
+      title: "Professional Templates",
+      description: "AI-powered formatting that follows industry standards and best practices"
+    },
+    {
+      title: "ATS-Optimized",
+      description: "Designed to pass through Applicant Tracking Systems successfully"
+    },
+    {
+      title: "Instant Generation",
+      description: "Create a polished CV in minutes, not hours"
+    },
+    {
+      title: "Customizable Content",
+      description: "Add your skills, experience, projects, and certifications easily"
+    },
+    {
+      title: "PDF Export",
+      description: "Download your CV as a professional PDF ready for submission"
+    },
+    {
+      title: "Always Updated",
+      description: "Keep your CV current with the latest information and formatting trends"
     }
-  };
+  ];
 
-  const removeSkill = (skill: string) => {
-    setAdditionalSkills(additionalSkills.filter(s => s !== skill));
-  };
-
-  const addEducation = () => {
-    setEducationDetails([...educationDetails, {
-      degree: '',
-      institution: '',
-      startDate: '',
-      endDate: '',
-      location: ''
-    }]);
-  };
-
-  const updateEducation = (index: number, field: keyof Education, value: string) => {
-    const updated = [...educationDetails];
-    updated[index][field] = value;
-    setEducationDetails(updated);
-  };
-
-  const removeEducation = (index: number) => {
-    setEducationDetails(educationDetails.filter((_, i) => i !== index));
-  };
-
-  const addWorkExperience = () => {
-    setWorkExperiences([...workExperiences, {
-      company: '',
-      position: '',
-      startDate: '',
-      endDate: '',
-      description: '',
-      location: ''
-    }]);
-  };
-
-  const updateWorkExperience = (index: number, field: keyof WorkExperience, value: string) => {
-    const updated = [...workExperiences];
-    updated[index][field] = value;
-    setWorkExperiences(updated);
-  };
-
-  const removeWorkExperience = (index: number) => {
-    setWorkExperiences(workExperiences.filter((_, i) => i !== index));
-  };
-
-  const addProject = () => {
-    setProjects([...projects, {
-      title: '',
-      description: '',
-      technologies: '',
-      link: '',
-      details: ['']
-    }]);
-  };
-
-  const updateProject = (index: number, field: keyof Project, value: string | string[]) => {
-    const updated = [...projects];
-    updated[index][field] = value as any;
-    setProjects(updated);
-  };
-
-  const addProjectDetail = (projectIndex: number) => {
-    const updated = [...projects];
-    updated[projectIndex].details.push('');
-    setProjects(updated);
-  };
-
-  const updateProjectDetail = (projectIndex: number, detailIndex: number, value: string) => {
-    const updated = [...projects];
-    updated[projectIndex].details[detailIndex] = value;
-    setProjects(updated);
-  };
-
-  const removeProjectDetail = (projectIndex: number, detailIndex: number) => {
-    const updated = [...projects];
-    updated[projectIndex].details = updated[projectIndex].details.filter((_, i) => i !== detailIndex);
-    setProjects(updated);
-  };
-
-  const removeProject = (index: number) => {
-    setProjects(projects.filter((_, i) => i !== index));
-  };
-
-  const addCertification = () => {
-    setCertifications([...certifications, {
-      title: '',
-      issuer: '',
-      date: '',
-      link: ''
-    }]);
-  };
-
-  const updateCertification = (index: number, field: keyof Certification, value: string) => {
-    const updated = [...certifications];
-    updated[index][field] = value;
-    setCertifications(updated);
-  };
-
-  const removeCertification = (index: number) => {
-    setCertifications(certifications.filter((_, i) => i !== index));
-  };
-
-  const updateContactInfo = (field: keyof ContactInfo, value: string) => {
-    setContactInfo({ ...contactInfo, [field]: value });
-  };
-
-  const handleGenerateCV = async () => {
-    if (!user) {
-      Alert.alert('Error', 'User data not loaded');
-      return;
+  const instructions = [
+    {
+      step: "1",
+      title: "Fill Your Information",
+      description: "Add your contact details, additional skills, and personal information"
+    },
+    {
+      step: "2",
+      title: "Add Your Education",
+      description: "Include your degrees, institutions, and graduation dates"
+    },
+    {
+      step: "3",
+      title: "List Work Experience",
+      description: "Detail your job positions, companies, and key achievements"
+    },
+    {
+      step: "4",
+      title: "Showcase Projects",
+      description: "Highlight your best projects with technologies and accomplishments"
+    },
+    {
+      step: "5",
+      title: "Add Certifications",
+      description: "Include relevant certifications to boost your credibility"
+    },
+    {
+      step: "6",
+      title: "Generate & Download",
+      description: "Create your professional CV and download it as a PDF"
     }
-
-    try {
-      const request: CVGenerationRequest = {
-        talentId: user.talentId,
-        additionalSkills,
-        educationDetails: educationDetails.filter(edu => edu.degree && edu.institution),
-        workExperiences: workExperiences.filter(exp => exp.company && exp.position),
-        projects: projects.filter(proj => proj.title && proj.description),
-        certifications: certifications.filter(cert => cert.title && cert.issuer),
-        contactInfo
-      };
-
-      validateCVRequest(request);
-      setLoading(true);
-
-      const result = await generateCVWithRetry(request);
-      
-      if (result.success && result.pdfData) {
-        setGeneratedCV(result.pdfData);
-        Alert.alert('Success', 'CV generated successfully!');
-      } else {
-        throw new Error(result.error || 'Failed to generate CV');
-      }
-
-    } catch (error) {
-      console.error('CV generation error:', error);
-      Alert.alert('Error', error.message || 'Failed to generate CV');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDownloadCV = async () => {
-    if (!generatedCV) return;
-
-    try {
-      const fileName = `${user?.fullname?.replace(/\s+/g, '_')}_CV.pdf` || 'my_cv.pdf';
-      await downloadCV(generatedCV, fileName);
-      Alert.alert('Success', 'CV downloaded successfully!');
-    } catch (error) {
-      Alert.alert('Error', 'Failed to download CV');
-    }
-  };
-
-  if (!user) {
-    return (
-      <View style={styles.container}>
-        <Header title="CV Generator" onBackPress={handleBackPress} />
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#007AFF" />
-          <Text>Loading user data...</Text>
-        </View>
-      </View>
-    );
-  }
+  ];
 
   return (
     <View style={styles.container}>
       <Header title="CV Generator" onBackPress={handleBackPress} />
       
       <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
-        <Text style={styles.title}>Generate Your Professional CV</Text>
-
-        {/* Contact Information */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Contact Information</Text>
-          <TextInput
-            style={styles.input}
-            value={contactInfo.phone}
-            onChangeText={(value) => updateContactInfo('phone', value)}
-            placeholder="Phone Number"
-          />
-          <TextInput
-            style={styles.input}
-            value={contactInfo.linkedin}
-            onChangeText={(value) => updateContactInfo('linkedin', value)}
-            placeholder="LinkedIn Profile URL"
-          />
-          <TextInput
-            style={styles.input}
-            value={contactInfo.github}
-            onChangeText={(value) => updateContactInfo('github', value)}
-            placeholder="GitHub Profile URL"
-          />
-          <TextInput
-            style={styles.input}
-            value={contactInfo.portfolio}
-            onChangeText={(value) => updateContactInfo('portfolio', value)}
-            placeholder="Portfolio Website URL"
-          />
+        <View style={styles.heroSection}>
+          <Text style={styles.heroTitle}>Create Your Professional CV</Text>
+          <Text style={styles.heroSubtitle}>
+            Generate a stunning, ATS-optimized CV in minutes with our AI-powered tool
+          </Text>
         </View>
 
-        {/* Existing Skills */}
+        {/* Benefits Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Current Skills</Text>
-          <View style={styles.skillsContainer}>
-            {user.skills?.map((skill: string, index: number) => (
-              <View key={index} style={[styles.skillChip, styles.existingSkill]}>
-                <Text style={styles.skillText}>{skill}</Text>
+          <Text style={styles.sectionTitle}>Why Use Our CV Generator?</Text>
+          <View style={styles.benefitsGrid}>
+            {benefits.map((benefit, index) => (
+              <View key={index} style={styles.benefitCard}>
+                <Text style={styles.benefitTitle}>{benefit.title}</Text>
+                <Text style={styles.benefitDescription}>{benefit.description}</Text>
               </View>
             ))}
           </View>
         </View>
 
-        {/* Additional Skills */}
+        {/* Instructions Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Additional Skills</Text>
-          <View style={styles.inputRow}>
-            <TextInput
-              style={[styles.input, { flex: 1 }]}
-              value={newSkill}
-              onChangeText={setNewSkill}
-              placeholder="Add a skill"
-              onSubmitEditing={addSkill}
-            />
-            <TouchableOpacity style={styles.addButton} onPress={addSkill}>
-              <Text style={styles.addButtonText}>Add</Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.skillsContainer}>
-            {additionalSkills.map((skill, index) => (
-              <TouchableOpacity
-                key={index}
-                style={[styles.skillChip, styles.additionalSkill]}
-                onPress={() => removeSkill(skill)}
-              >
-                <Text style={styles.skillText}>{skill} ×</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
-        {/* Education */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Education</Text>
-            <TouchableOpacity style={styles.addButton} onPress={addEducation}>
-              <Text style={styles.addButtonText}>Add Education</Text>
-            </TouchableOpacity>
-          </View>
-          {educationDetails.map((edu, index) => (
-            <View key={index} style={styles.itemContainer}>
-              <TextInput
-                style={styles.input}
-                value={edu.degree}
-                onChangeText={(value) => updateEducation(index, 'degree', value)}
-                placeholder="Degree (e.g., BSc Computer Science)"
-              />
-              <TextInput
-                style={styles.input}
-                value={edu.institution}
-                onChangeText={(value) => updateEducation(index, 'institution', value)}
-                placeholder="Institution"
-              />
-              <TextInput
-                style={styles.input}
-                value={edu.location}
-                onChangeText={(value) => updateEducation(index, 'location', value)}
-                placeholder="Location (optional)"
-              />
-              <View style={styles.dateRow}>
-                <TextInput
-                  style={[styles.input, styles.dateInput]}
-                  value={edu.startDate}
-                  onChangeText={(value) => updateEducation(index, 'startDate', value)}
-                  placeholder="Start Date"
-                />
-                <TextInput
-                  style={[styles.input, styles.dateInput]}
-                  value={edu.endDate}
-                  onChangeText={(value) => updateEducation(index, 'endDate', value)}
-                  placeholder="End Date"
-                />
-              </View>
-              <TouchableOpacity
-                style={styles.removeButton}
-                onPress={() => removeEducation(index)}
-              >
-                <Text style={styles.removeButtonText}>Remove</Text>
-              </TouchableOpacity>
-            </View>
-          ))}
-        </View>
-
-        {/* Work Experience */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Work Experience</Text>
-            <TouchableOpacity style={styles.addButton} onPress={addWorkExperience}>
-              <Text style={styles.addButtonText}>Add Experience</Text>
-            </TouchableOpacity>
-          </View>
-          {workExperiences.map((exp, index) => (
-            <View key={index} style={styles.itemContainer}>
-              <TextInput
-                style={styles.input}
-                value={exp.position}
-                onChangeText={(value) => updateWorkExperience(index, 'position', value)}
-                placeholder="Position/Job Title"
-              />
-              <TextInput
-                style={styles.input}
-                value={exp.company}
-                onChangeText={(value) => updateWorkExperience(index, 'company', value)}
-                placeholder="Company/Organization"
-              />
-              <TextInput
-                style={styles.input}
-                value={exp.location}
-                onChangeText={(value) => updateWorkExperience(index, 'location', value)}
-                placeholder="Location (optional)"
-              />
-              <View style={styles.dateRow}>
-                <TextInput
-                  style={[styles.input, styles.dateInput]}
-                  value={exp.startDate}
-                  onChangeText={(value) => updateWorkExperience(index, 'startDate', value)}
-                  placeholder="Start Date"
-                />
-                <TextInput
-                  style={[styles.input, styles.dateInput]}
-                  value={exp.endDate}
-                  onChangeText={(value) => updateWorkExperience(index, 'endDate', value)}
-                  placeholder="End Date"
-                />
-              </View>
-              <TextInput
-                style={[styles.input, styles.textArea]}
-                value={exp.description}
-                onChangeText={(value) => updateWorkExperience(index, 'description', value)}
-                placeholder="Job description and achievements"
-                multiline
-                numberOfLines={4}
-              />
-              <TouchableOpacity
-                style={styles.removeButton}
-                onPress={() => removeWorkExperience(index)}
-              >
-                <Text style={styles.removeButtonText}>Remove</Text>
-              </TouchableOpacity>
-            </View>
-          ))}
-        </View>
-
-        {/* Projects */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Projects</Text>
-            <TouchableOpacity style={styles.addButton} onPress={addProject}>
-              <Text style={styles.addButtonText}>Add Project</Text>
-            </TouchableOpacity>
-          </View>
-          {projects.map((project, projectIndex) => (
-            <View key={projectIndex} style={styles.itemContainer}>
-              <TextInput
-                style={styles.input}
-                value={project.title}
-                onChangeText={(value) => updateProject(projectIndex, 'title', value)}
-                placeholder="Project Title"
-              />
-              <TextInput
-                style={styles.input}
-                value={project.description}
-                onChangeText={(value) => updateProject(projectIndex, 'description', value)}
-                placeholder="Brief Description"
-              />
-              <TextInput
-                style={styles.input}
-                value={project.technologies}
-                onChangeText={(value) => updateProject(projectIndex, 'technologies', value)}
-                placeholder="Technologies Used (comma separated)"
-              />
-              <TextInput
-                style={styles.input}
-                value={project.link}
-                onChangeText={(value) => updateProject(projectIndex, 'link', value)}
-                placeholder="Project Link/URL (optional)"
-              />
-              
-              <Text style={styles.subSectionTitle}>Project Details/Achievements:</Text>
-              {project.details.map((detail, detailIndex) => (
-                <View key={detailIndex} style={styles.inputRow}>
-                  <TextInput
-                    style={[styles.input, { flex: 1 }]}
-                    value={detail}
-                    onChangeText={(value) => updateProjectDetail(projectIndex, detailIndex, value)}
-                    placeholder="Project detail or achievement"
-                    multiline
-                  />
-                  <TouchableOpacity
-                    style={styles.miniRemoveButton}
-                    onPress={() => removeProjectDetail(projectIndex, detailIndex)}
-                  >
-                    <Text style={styles.removeButtonText}>×</Text>
-                  </TouchableOpacity>
+          <Text style={styles.sectionTitle}>How It Works</Text>
+          <View style={styles.instructionsContainer}>
+            {instructions.map((instruction, index) => (
+              <View key={index} style={styles.instructionItem}>
+                <View style={styles.stepNumber}>
+                  <Text style={styles.stepNumberText}>{instruction.step}</Text>
                 </View>
-              ))}
-              
-              <TouchableOpacity
-                style={styles.smallAddButton}
-                onPress={() => addProjectDetail(projectIndex)}
-              >
-                <Text style={styles.addButtonText}>Add Detail</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity
-                style={styles.removeButton}
-                onPress={() => removeProject(projectIndex)}
-              >
-                <Text style={styles.removeButtonText}>Remove Project</Text>
-              </TouchableOpacity>
-            </View>
-          ))}
-        </View>
-
-        {/* Certifications */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Certifications</Text>
-            <TouchableOpacity style={styles.addButton} onPress={addCertification}>
-              <Text style={styles.addButtonText}>Add Certification</Text>
-            </TouchableOpacity>
+                <View style={styles.instructionContent}>
+                  <Text style={styles.instructionTitle}>{instruction.title}</Text>
+                  <Text style={styles.instructionDescription}>{instruction.description}</Text>
+                </View>
+              </View>
+            ))}
           </View>
-          {certifications.map((cert, index) => (
-            <View key={index} style={styles.itemContainer}>
-              <TextInput
-                style={styles.input}
-                value={cert.title}
-                onChangeText={(value) => updateCertification(index, 'title', value)}
-                placeholder="Certification Title"
-              />
-              <TextInput
-                style={styles.input}
-                value={cert.issuer}
-                onChangeText={(value) => updateCertification(index, 'issuer', value)}
-                placeholder="Issuing Organization"
-              />
-              <TextInput
-                style={styles.input}
-                value={cert.date}
-                onChangeText={(value) => updateCertification(index, 'date', value)}
-                placeholder="Date Obtained"
-              />
-              <TextInput
-                style={styles.input}
-                value={cert.link}
-                onChangeText={(value) => updateCertification(index, 'link', value)}
-                placeholder="Certification Link/URL (optional)"
-              />
-              <TouchableOpacity
-                style={styles.removeButton}
-                onPress={() => removeCertification(index)}
-              >
-                <Text style={styles.removeButtonText}>Remove</Text>
-              </TouchableOpacity>
-            </View>
-          ))}
         </View>
 
-        {/* Generate CV Button */}
-        <TouchableOpacity
-          style={[styles.generateButton, loading && styles.disabledButton]}
-          onPress={handleGenerateCV}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.generateButtonText}>Generate Professional CV</Text>
-          )}
-        </TouchableOpacity>
+        {/* Features Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Key Features</Text>
+          <View style={styles.featuresList}>
+            <View style={styles.featureItem}>
+              <Text style={styles.featureBullet}>✓</Text>
+              <Text style={styles.featureText}>Smart formatting and layout optimization</Text>
+            </View>
+            <View style={styles.featureItem}>
+              <Text style={styles.featureBullet}>✓</Text>
+              <Text style={styles.featureText}>Multiple sections for comprehensive CV</Text>
+            </View>
+            <View style={styles.featureItem}>
+              <Text style={styles.featureBullet}>✓</Text>
+              <Text style={styles.featureText}>Real-time preview and editing</Text>
+            </View>
+            <View style={styles.featureItem}>
+              <Text style={styles.featureBullet}>✓</Text>
+              <Text style={styles.featureText}>Professional PDF export</Text>
+            </View>
+            <View style={styles.featureItem}>
+              <Text style={styles.featureBullet}>✓</Text>
+              <Text style={styles.featureText}>Mobile-friendly interface</Text>
+            </View>
+          </View>
+        </View>
 
-        {/* Download Button */}
-        {generatedCV && (
+        {/* CTA Section */}
+        <View style={styles.ctaSection}>
+          <Text style={styles.ctaTitle}>Ready to Create Your CV?</Text>
+          <Text style={styles.ctaDescription}>
+            Join thousands of professionals who have successfully created their CVs with our tool
+          </Text>
+          
           <TouchableOpacity
-            style={styles.downloadButton}
-            onPress={handleDownloadCV}
+            style={styles.getStartedButton}
+            onPress={handleGetStarted}
           >
-            <Text style={styles.downloadButtonText}>Download PDF</Text>
+            <Text style={styles.getStartedButtonText}>Get Started Now</Text>
           </TouchableOpacity>
-        )}
+        </View>
 
         <View style={{ height: 50 }} />
       </ScrollView>
@@ -608,23 +180,32 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
+  heroSection: {
+    backgroundColor: '#5badec',
+    padding: 30,
+    borderRadius: 15,
+    marginBottom: 25,
     alignItems: 'center',
   },
-  title: {
-    fontSize: 24,
+  heroTitle: {
+    fontSize: 28,
     fontWeight: 'bold',
-    marginBottom: 20,
+    color: '#fff',
     textAlign: 'center',
-    color: '#333',
+    marginBottom: 10,
+  },
+  heroSubtitle: {
+    fontSize: 16,
+    color: '#fff',
+    textAlign: 'center',
+    lineHeight: 24,
+    opacity: 0.9,
   },
   section: {
     backgroundColor: '#fff',
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 15,
+    padding: 20,
+    borderRadius: 12,
+    marginBottom: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -632,147 +213,128 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: 'bold',
-    marginBottom: 10,
     color: '#333',
+    marginBottom: 20,
+    textAlign: 'center',
   },
-  subSectionTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 8,
-    marginTop: 8,
-    color: '#555',
+  benefitsGrid: {
+    gap: 15,
   },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
+  benefitCard: {
+    backgroundColor: '#f8f9fa',
+    padding: 15,
+    borderRadius: 10,
+    borderLeftWidth: 4,
+    borderLeftColor: '#5badec',
   },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 10,
+  benefitTitle: {
     fontSize: 16,
-    backgroundColor: '#fafafa',
-  },
-  inputRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
+    fontWeight: '600',
+    color: '#333',
     marginBottom: 5,
   },
-  dateRow: {
-    flexDirection: 'row',
-    gap: 10,
+  benefitDescription: {
+    fontSize: 14,
+    color: '#666',
+    lineHeight: 20,
   },
-  dateInput: {
+  instructionsContainer: {
+    gap: 15,
+  },
+  instructionItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 15,
+  },
+  stepNumber: {
+    width: 35,
+    height: 35,
+    borderRadius: 17.5,
+    backgroundColor: '#5badec',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  stepNumberText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  instructionContent: {
     flex: 1,
   },
-  textArea: {
-    height: 100,
-    textAlignVertical: 'top',
+  instructionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 4,
   },
-  skillsContainer: {
+  instructionDescription: {
+    fontSize: 14,
+    color: '#666',
+    lineHeight: 20,
+  },
+  featuresList: {
+    gap: 12,
+  },
+  featureItem: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  skillChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    marginBottom: 5,
-  },
-  existingSkill: {
-    backgroundColor: '#e3f2fd',
-  },
-  additionalSkill: {
-    backgroundColor: '#fff3e0',
-  },
-  skillText: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  addButton: {
-    backgroundColor: '#007AFF',
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  smallAddButton: {
-    backgroundColor: '#007AFF',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
-    alignSelf: 'flex-start',
-    marginTop: 5,
-    marginBottom: 10,
-  },
-  addButtonText: {
-    color: '#fff',
-    fontWeight: '600',
-    fontSize: 14,
-  },
-  removeButton: {
-    backgroundColor: '#ff4444',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
-    alignSelf: 'flex-start',
-    marginTop: 5,
-  },
-  miniRemoveButton: {
-    backgroundColor: '#ff4444',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-    minWidth: 30,
     alignItems: 'center',
+    gap: 10,
   },
-  removeButtonText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: '600',
+  featureBullet: {
+    fontSize: 16,
+    color: '#5badec',
+    fontWeight: 'bold',
   },
-  itemContainer: {
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 10,
-    backgroundColor: '#fafafa',
+  featureText: {
+    fontSize: 15,
+    color: '#333',
+    flex: 1,
   },
-  generateButton: {
-    backgroundColor: '#28a745',
-    padding: 15,
-    borderRadius: 10,
+  ctaSection: {
+    backgroundColor: '#fff',
+    padding: 25,
+    borderRadius: 12,
     alignItems: 'center',
-    marginTop: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  generateButtonText: {
+  ctaTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  ctaDescription: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 25,
+    lineHeight: 20,
+  },
+  getStartedButton: {
+    backgroundColor: '#5badec',
+    paddingHorizontal: 40,
+    paddingVertical: 15,
+    borderRadius: 25,
+    shadowColor: '#5badec',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  getStartedButtonText: {
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
-  },
-  downloadButton: {
-    backgroundColor: '#17a2b8',
-    padding: 15,
-    borderRadius: 10,
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  downloadButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  disabledButton: {
-    backgroundColor: '#cccccc',
+    textAlign: 'center',
   },
 });
 
-export default CVGenerator;
+export default CVWelcome;

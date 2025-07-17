@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   analyzeButton: {
-    backgroundColor: '#007bff',
+    backgroundColor: '#5badec',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
@@ -343,7 +343,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   heroSection: {
-    backgroundColor: '#007bff',
+    backgroundColor: '#5badec',
     padding: 30,
     borderRadius: 16,
     marginBottom: 24,
@@ -434,7 +434,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#007bff',
+    backgroundColor: '#5badec',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,

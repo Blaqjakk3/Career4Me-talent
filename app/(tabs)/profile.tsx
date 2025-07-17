@@ -1,4 +1,4 @@
-import { View, Text, Pressable, Alert, Image, TextInput, ScrollView, ActivityIndicator, Modal, TouchableOpacity } from 'react-native'
+import { View, Text, Pressable, Alert, Image, TextInput, ScrollView, ActivityIndicator, Modal, TouchableOpacity, Dimensions } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { useGlobalContext } from '../../context/GlobalProvider'
 import { useRouter } from 'expo-router'
@@ -7,6 +7,7 @@ import { getCurrentUser, updateUserProfile, updateUserPassword, uploadAvatar, ge
 import * as ImagePicker from 'expo-image-picker'
 import { Ionicons } from '@expo/vector-icons'
 
+const { width } = Dimensions.get('window');
 
 const Profile = () => {
   const { logOut } = useGlobalContext()
@@ -218,25 +219,43 @@ const Profile = () => {
 
   if (!userData || !editedData) {
     return (
-      <SafeAreaView className="flex-1 bg-gray-50">
-        <View className="flex-1 justify-center items-center">
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#f8fafc' }}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <ActivityIndicator size="large" color="#5badec" />
-          <Text className="mt-2 text-gray-600">Loading profile...</Text>
+          <Text style={{ marginTop: 16, fontSize: 16, color: '#64748b', fontWeight: '500' }}>Loading profile...</Text>
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
-      <ScrollView className="flex-1">
-        {/* Header */}
-        <View className="bg-white px-4 py-6 shadow-sm">
-          <View className="flex-row justify-between items-center mb-6">
-            <Text className="text-2xl font-bold text-gray-900">Profile</Text>
-            <View className="flex-row space-x-3">
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#f8fafc' }}>
+      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+        {/* Header with Gradient Background */}
+        <View style={{
+          backgroundColor: 'white',
+          paddingHorizontal: 20,
+          paddingTop: 24,
+          paddingBottom: 32,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.08,
+          shadowRadius: 12,
+          elevation: 8,
+        }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32 }}>
+            <Text style={{ fontSize: 32, fontWeight: '700', color: '#1e293b', letterSpacing: -0.5 }}>Profile</Text>
+            <View style={{ flexDirection: 'row', gap: 12 }}>
               {!isChangingPassword && !showSettings && (
-                <Pressable onPress={handleEditToggle} className="p-2">
+                <Pressable 
+                  onPress={handleEditToggle}
+                  style={({ pressed }) => ({
+                    padding: 12,
+                    borderRadius: 16,
+                    backgroundColor: pressed ? '#f1f5f9' : 'transparent',
+                    transform: [{ scale: pressed ? 0.95 : 1 }],
+                  })}
+                >
                   <Ionicons 
                     name={isEditing ? "close" : "pencil"} 
                     size={24} 
@@ -247,142 +266,333 @@ const Profile = () => {
             </View>
           </View>
 
-          {/* Avatar Section */}
-          <View className="items-center mb-6">
-            <View className="relative">
-              <Image 
-                source={{ uri: isEditing ? editedData.avatar : userData.avatar }}
-                className="w-32 h-32 rounded-full border-4 border-white shadow-lg"
-                resizeMode="cover"
-                onError={(e) => console.log('Image load error:', e.nativeEvent.error)}
-              />
+          {/* Enhanced Avatar Section */}
+          <View style={{ alignItems: 'center' }}>
+            <View style={{ position: 'relative', marginBottom: 20 }}>
+              {/* Avatar Ring */}
+              <View style={{
+                width: 144,
+                height: 144,
+                borderRadius: 72,
+                backgroundColor: '#5badec',
+                justifyContent: 'center',
+                alignItems: 'center',
+                shadowColor: '#5badec',
+                shadowOffset: { width: 0, height: 8 },
+                shadowOpacity: 0.3,
+                shadowRadius: 20,
+                elevation: 12,
+              }}>
+                <Image 
+                  source={{ uri: isEditing ? editedData.avatar : userData.avatar }}
+                  style={{
+                    width: 136,
+                    height: 136,
+                    borderRadius: 68,
+                    borderWidth: 4,
+                    borderColor: 'white',
+                  }}
+                  resizeMode="cover"
+                  onError={(e) => console.log('Image load error:', e.nativeEvent.error)}
+                />
+              </View>
+              
               {avatarUploading && (
-                <View className="absolute inset-0 bg-black bg-opacity-50 rounded-full justify-center items-center">
-                  <ActivityIndicator size="small" color="white" />
+                <View style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: 'rgba(0,0,0,0.5)',
+                  borderRadius: 72,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}>
+                  <ActivityIndicator size="large" color="white" />
                 </View>
               )}
+              
               {isEditing && !avatarUploading && (
                 <Pressable 
                   onPress={handleAvatarUpload}
-                  className="absolute bottom-2 right-2 bg-[#5badec] w-10 h-10 rounded-full justify-center items-center shadow-lg"
+                  style={({ pressed }) => ({
+                    position: 'absolute',
+                    bottom: 8,
+                    right: 8,
+                    backgroundColor: '#5badec',
+                    width: 48,
+                    height: 48,
+                    borderRadius: 24,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    shadowColor: '#5badec',
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 12,
+                    elevation: 8,
+                    transform: [{ scale: pressed ? 0.9 : 1 }],
+                  })}
                 >
-                  <Ionicons name="camera" size={20} color="white" />
+                  <Ionicons name="camera" size={24} color="white" />
                 </Pressable>
               )}
             </View>
-            {isEditing && !avatarUploading && (
-              <Pressable onPress={handleAvatarUpload} className="mt-2">
-                <Text className="text-[#5badec] text-sm font-medium">Change Avatar</Text>
-              </Pressable>
+            
+            {/* User Name */}
+            <Text style={{ fontSize: 24, fontWeight: '700', color: '#1e293b', textAlign: 'center', marginBottom: 8 }}>
+              {userData.fullname}
+            </Text>
+            
+            {/* Career Stage Badge */}
+            {userData.careerStage && (
+              <View style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: '#f0f9ff',
+                paddingHorizontal: 16,
+                paddingVertical: 8,
+                borderRadius: 20,
+                borderWidth: 1,
+                borderColor: '#e0f2fe',
+              }}>
+                <Ionicons
+                  name={careerStages.find(s => s.value === userData.careerStage)?.icon as any}
+                  size={16}
+                  color="#0369a1"
+                  style={{ marginRight: 8 }}
+                />
+                <Text style={{ fontSize: 14, fontWeight: '600', color: '#0369a1' }}>
+                  {careerStages.find(s => s.value === userData.careerStage)?.label}
+                </Text>
+              </View>
             )}
           </View>
         </View>
 
         {/* Profile Information Card */}
-        <View className="mx-4 mt-4 bg-white rounded-xl shadow-sm p-6">
-          <Text className="text-lg font-semibold text-gray-900 mb-4">Personal Information</Text>
+        <View style={{
+          marginHorizontal: 20,
+          marginTop: 24,
+          backgroundColor: 'white',
+          borderRadius: 24,
+          padding: 24,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.06,
+          shadowRadius: 16,
+          elevation: 8,
+        }}>
+          <Text style={{ fontSize: 20, fontWeight: '700', color: '#1e293b', marginBottom: 24 }}>Personal Information</Text>
           
           {/* Full Name */}
-          <View className="mb-4">
-            <Text className="text-gray-700 font-medium mb-2">Full Name</Text>
+          <View style={{ marginBottom: 24 }}>
+            <Text style={{ fontSize: 14, fontWeight: '600', color: '#64748b', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>Full Name</Text>
             {isEditing ? (
               <TextInput
                 value={editedData.fullname}
                 onChangeText={(text) => setEditedData({...editedData, fullname: text})}
-                className="border border-gray-300 rounded-lg px-4 py-3 text-base bg-gray-50"
+                style={{
+                  borderWidth: 2,
+                  borderColor: '#e2e8f0',
+                  borderRadius: 16,
+                  paddingHorizontal: 16,
+                  paddingVertical: 16,
+                  fontSize: 16,
+                  backgroundColor: '#f8fafc',
+                  color: '#1e293b',
+                  fontWeight: '500',
+                }}
                 placeholder="Enter your full name"
+                placeholderTextColor="#94a3b8"
               />
             ) : (
-              <Text className="text-lg text-gray-900">{userData.fullname}</Text>
+              <Text style={{ fontSize: 18, fontWeight: '600', color: '#1e293b' }}>{userData.fullname}</Text>
             )}
           </View>
 
           {/* Email */}
-          <View className="mb-4">
-            <Text className="text-gray-700 font-medium mb-2">Email</Text>
+          <View style={{ marginBottom: 24 }}>
+            <Text style={{ fontSize: 14, fontWeight: '600', color: '#64748b', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>Email Address</Text>
             {isEditing ? (
               <TextInput
                 value={editedData.email}
                 onChangeText={(text) => setEditedData({...editedData, email: text})}
-                className="border border-gray-300 rounded-lg px-4 py-3 text-base bg-gray-50"
+                style={{
+                  borderWidth: 2,
+                  borderColor: '#e2e8f0',
+                  borderRadius: 16,
+                  paddingHorizontal: 16,
+                  paddingVertical: 16,
+                  fontSize: 16,
+                  backgroundColor: '#f8fafc',
+                  color: '#1e293b',
+                  fontWeight: '500',
+                }}
                 placeholder="Enter your email"
+                placeholderTextColor="#94a3b8"
                 keyboardType="email-address"
                 autoCapitalize="none"
               />
             ) : (
-              <Text className="text-gray-600">{userData.email}</Text>
+              <Text style={{ fontSize: 16, color: '#64748b', fontWeight: '500' }}>{userData.email}</Text>
             )}
           </View>
 
           {/* Career Stage */}
-          <View className="mb-4">
-            <Text className="text-gray-700 font-medium mb-2">Career Stage</Text>
+          <View style={{ marginBottom: 24 }}>
+            <Text style={{ fontSize: 14, fontWeight: '600', color: '#64748b', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>Career Stage</Text>
             {isEditing ? (
               <>
-                <TouchableOpacity onPress={() => setCareerStageModalVisible(true)}>
-                  <View className="w-full h-12 px-4 bg-gray-50 rounded-lg border border-gray-300 flex-row items-center">
-                    {editedData.careerStage && (
-                      <Ionicons
-                        name={
-                          careerStages.find(s => s.value === editedData.careerStage)?.icon as any
-                        }
-                        size={20}
-                        color="#5badec"
-                        style={{ marginRight: 8 }}
-                      />
-                    )}
-                    <Text className={`text-base flex-1 ${editedData.careerStage ? "text-black" : "text-gray-400"}`}>
-                      {careerStages.find(s => s.value === editedData.careerStage)?.label || "Select your career stage"}
-                    </Text>
-                  </View>
+                <TouchableOpacity 
+                  onPress={() => setCareerStageModalVisible(true)}
+                  style={{
+                    borderWidth: 2,
+                    borderColor: '#e2e8f0',
+                    borderRadius: 16,
+                    paddingHorizontal: 16,
+                    paddingVertical: 16,
+                    backgroundColor: '#f8fafc',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                  }}
+                >
+                  {editedData.careerStage && (
+                    <Ionicons
+                      name={careerStages.find(s => s.value === editedData.careerStage)?.icon as any}
+                      size={20}
+                      color="#5badec"
+                      style={{ marginRight: 12 }}
+                    />
+                  )}
+                  <Text style={{
+                    fontSize: 16,
+                    flex: 1,
+                    color: editedData.careerStage ? '#1e293b' : '#94a3b8',
+                    fontWeight: '500',
+                  }}>
+                    {careerStages.find(s => s.value === editedData.careerStage)?.label || "Select your career stage"}
+                  </Text>
+                  <Ionicons name="chevron-down" size={20} color="#64748b" />
                 </TouchableOpacity>
+                
                 <Modal
                   visible={careerStageModalVisible}
                   transparent={true}
                   animationType="slide"
                   onRequestClose={() => setCareerStageModalVisible(false)}
                 >
-                  <View className="flex-1 justify-center items-center bg-black/50">
-                    <View className="w-80 bg-white rounded-lg p-4 max-h-[80%]">
-                      <ScrollView>
-                        {careerStages.map((stage) => (
+                  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+                    <View style={{
+                      width: width - 40,
+                      backgroundColor: 'white',
+                      borderRadius: 24,
+                      padding: 24,
+                      maxHeight: '80%',
+                      shadowColor: '#000',
+                      shadowOffset: { width: 0, height: 20 },
+                      shadowOpacity: 0.25,
+                      shadowRadius: 25,
+                      elevation: 25,
+                    }}>
+                      <Text style={{ fontSize: 20, fontWeight: '700', color: '#1e293b', marginBottom: 20, textAlign: 'center' }}>
+                        Select Career Stage
+                      </Text>
+                      <ScrollView showsVerticalScrollIndicator={false}>
+                        {careerStages.map((stage, index) => (
                           <TouchableOpacity
                             key={stage.value}
                             onPress={() => {
                               setEditedData({ ...editedData, careerStage: stage.value });
                               setCareerStageModalVisible(false);
                             }}
-                            className="p-3 border-b border-gray-200"
+                            style={{
+                              padding: 20,
+                              borderRadius: 16,
+                              backgroundColor: '#f8fafc',
+                              marginBottom: index < careerStages.length - 1 ? 12 : 0,
+                              borderWidth: editedData.careerStage === stage.value ? 2 : 0,
+                              borderColor: '#5badec',
+                            }}
                           >
-                            <View className="flex-row items-center">
-                              <Ionicons name={stage.icon as any} size={20} color="#5badec" />
-                              <View className="ml-2 flex-1">
-                                <Text className="text-base text-gray-800">{stage.label}</Text>
-                                <Text className="text-sm text-gray-500 mt-1">{stage.description}</Text>
+                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                              <View style={{
+                                width: 48,
+                                height: 48,
+                                borderRadius: 24,
+                                backgroundColor: editedData.careerStage === stage.value ? '#5badec' : '#e2e8f0',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                marginRight: 16,
+                              }}>
+                                <Ionicons 
+                                  name={stage.icon as any} 
+                                  size={24} 
+                                  color={editedData.careerStage === stage.value ? 'white' : '#64748b'} 
+                                />
+                              </View>
+                              <View style={{ flex: 1 }}>
+                                <Text style={{
+                                  fontSize: 16,
+                                  fontWeight: '600',
+                                  color: editedData.careerStage === stage.value ? '#5badec' : '#1e293b',
+                                  marginBottom: 4,
+                                }}>
+                                  {stage.label}
+                                </Text>
+                                <Text style={{
+                                  fontSize: 14,
+                                  color: '#64748b',
+                                  lineHeight: 20,
+                                }}>
+                                  {stage.description}
+                                </Text>
                               </View>
                             </View>
                           </TouchableOpacity>
                         ))}
                       </ScrollView>
+                      
+                      <TouchableOpacity
+                        onPress={() => setCareerStageModalVisible(false)}
+                        style={{
+                          marginTop: 20,
+                          padding: 16,
+                          backgroundColor: '#f1f5f9',
+                          borderRadius: 16,
+                          alignItems: 'center',
+                        }}
+                      >
+                        <Text style={{ fontSize: 16, fontWeight: '600', color: '#64748b' }}>Cancel</Text>
+                      </TouchableOpacity>
                     </View>
                   </View>
                 </Modal>
               </>
             ) : (
-              <View className="flex-row items-center">
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 {userData.careerStage && (
-                  <Ionicons
-                    name={
-                      careerStages.find(s => s.value === userData.careerStage)?.icon as any
-                    }
-                    size={20}
-                    color="#5badec"
-                    style={{ marginRight: 8 }}
-                  />
+                  <View style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 20,
+                    backgroundColor: '#f0f9ff',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    marginRight: 12,
+                  }}>
+                    <Ionicons
+                      name={careerStages.find(s => s.value === userData.careerStage)?.icon as any}
+                      size={20}
+                      color="#0369a1"
+                    />
+                  </View>
                 )}
                 <View>
-                  <Text className="text-gray-900">{careerStages.find(s => s.value === userData.careerStage)?.label}</Text>
-                  <Text className="text-xs text-gray-500">
+                  <Text style={{ fontSize: 16, fontWeight: '600', color: '#1e293b' }}>
+                    {careerStages.find(s => s.value === userData.careerStage)?.label}
+                  </Text>
+                  <Text style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>
                     {careerStages.find(s => s.value === userData.careerStage)?.description}
                   </Text>
                 </View>
@@ -392,13 +602,31 @@ const Profile = () => {
 
           {/* Selected Career Path */}
           {selectedCareerPath && (
-            <View className="mb-4">
-              <Text className="text-gray-700 font-medium mb-2">Selected Career Path</Text>
-              <View className="flex-row items-center">
-                <Ionicons name="briefcase-outline" size={20} color="#5badec" style={{ marginRight: 8 }} />
+            <View>
+              <Text style={{ fontSize: 14, fontWeight: '600', color: '#64748b', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>Career Path</Text>
+              <View style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: '#f0fdf4',
+                padding: 16,
+                borderRadius: 16,
+                borderWidth: 1,
+                borderColor: '#bbf7d0',
+              }}>
+                <View style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 20,
+                  backgroundColor: '#22c55e',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  marginRight: 12,
+                }}>
+                  <Ionicons name="briefcase" size={20} color="white" />
+                </View>
                 <View>
-                  <Text className="text-gray-900">{selectedCareerPath.title}</Text>
-                  <Text className="text-xs text-gray-500">{selectedCareerPath.industry}</Text>
+                  <Text style={{ fontSize: 16, fontWeight: '600', color: '#15803d' }}>{selectedCareerPath.title}</Text>
+                  <Text style={{ fontSize: 12, color: '#16a34a', marginTop: 2 }}>{selectedCareerPath.industry}</Text>
                 </View>
               </View>
             </View>
@@ -407,70 +635,138 @@ const Profile = () => {
 
         {/* Action Buttons */}
         {isEditing ? (
-          <View className="mx-4 mt-4 mb-6">
+          <View style={{ marginHorizontal: 20, marginTop: 24, marginBottom: 24 }}>
             <Pressable
               onPress={handleSaveProfile}
               disabled={loading}
-              className="bg-[#5badec] py-4 px-6 rounded-xl shadow-sm"
+              style={({ pressed }) => ({
+                backgroundColor: pressed ? '#3b82f6' : '#5badec',
+                paddingVertical: 18,
+                paddingHorizontal: 24,
+                borderRadius: 20,
+                shadowColor: '#5badec',
+                shadowOffset: { width: 0, height: 8 },
+                shadowOpacity: 0.3,
+                shadowRadius: 20,
+                elevation: 12,
+                transform: [{ scale: pressed ? 0.98 : 1 }],
+              })}
             >
               {loading ? (
                 <ActivityIndicator size="small" color="white" />
               ) : (
-                <Text className="text-white text-center font-semibold text-lg">Save Changes</Text>
+                <Text style={{ color: 'white', textAlign: 'center', fontWeight: '700', fontSize: 18 }}>Save Changes</Text>
               )}
             </Pressable>
           </View>
         ) : (
           !showSettings && !isChangingPassword && (
-            <View className="mx-4 mt-4">
+            <View style={{ marginHorizontal: 20, marginTop: 24 }}>
               {/* Settings Card */}
-              <View className="bg-white rounded-xl shadow-sm p-6">
-                <Text className="text-lg font-semibold text-gray-900 mb-4">Settings</Text>
+              <View style={{
+                backgroundColor: 'white',
+                borderRadius: 24,
+                padding: 24,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.06,
+                shadowRadius: 16,
+                elevation: 8,
+              }}>
+                <Text style={{ fontSize: 20, fontWeight: '700', color: '#1e293b', marginBottom: 20 }}>Settings</Text>
                 
                 {/* Change Password */}
                 <Pressable
                   onPress={() => setIsChangingPassword(true)}
-                  className="flex-row items-center p-4 bg-gray-50 rounded-lg mb-3"
+                  style={({ pressed }) => ({
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    padding: 20,
+                    backgroundColor: pressed ? '#f8fafc' : '#f1f5f9',
+                    borderRadius: 20,
+                    marginBottom: 16,
+                    transform: [{ scale: pressed ? 0.98 : 1 }],
+                  })}
                 >
-                  <View className="w-10 h-10 bg-[#5badec] rounded-full justify-center items-center mr-4">
-                    <Ionicons name="lock-closed-outline" size={20} color="white" />
+                  <View style={{
+                    width: 48,
+                    height: 48,
+                    backgroundColor: '#5badec',
+                    borderRadius: 24,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    marginRight: 16,
+                  }}>
+                    <Ionicons name="lock-closed" size={24} color="white" />
                   </View>
-                  <View className="flex-1">
-                    <Text className="text-gray-900 font-medium">Change Password</Text>
-                    <Text className="text-gray-500 text-sm">Update your account password</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 16, fontWeight: '600', color: '#1e293b' }}>Change Password</Text>
+                    <Text style={{ fontSize: 14, color: '#64748b', marginTop: 2 }}>Update your account password</Text>
                   </View>
-                  <Ionicons name="chevron-forward" size={20} color="#ccc" />
+                  <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
                 </Pressable>
 
                 {/* Notifications */}
                 <Pressable
                   onPress={() => {
-                    // Navigate to notifications settings
                     Alert.alert('Coming Soon', 'Notifications settings will be available soon');
                   }}
-                  className="flex-row items-center p-4 bg-gray-50 rounded-lg mb-3"
+                  style={({ pressed }) => ({
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    padding: 20,
+                    backgroundColor: pressed ? '#f8fafc' : '#f1f5f9',
+                    borderRadius: 20,
+                    marginBottom: 16,
+                    transform: [{ scale: pressed ? 0.98 : 1 }],
+                  })}
                 >
-                  <View className="w-10 h-10 bg-[#5badec] rounded-full justify-center items-center mr-4">
-                    <Ionicons name="notifications-outline" size={20} color="white" />
+                  <View style={{
+                    width: 48,
+                    height: 48,
+                    backgroundColor: '#8b5cf6',
+                    borderRadius: 24,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    marginRight: 16,
+                  }}>
+                    <Ionicons name="notifications" size={24} color="white" />
                   </View>
-                  <View className="flex-1">
-                    <Text className="text-gray-900 font-medium">Notifications</Text>
-                    <Text className="text-gray-500 text-sm">Manage your notification preferences</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 16, fontWeight: '600', color: '#1e293b' }}>Notifications</Text>
+                    <Text style={{ fontSize: 14, color: '#64748b', marginTop: 2 }}>Manage your notification preferences</Text>
                   </View>
-                  <Ionicons name="chevron-forward" size={20} color="#ccc" />
+                  <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
                 </Pressable>
 
                 {/* Sign Out */}
                 <Pressable
                   onPress={handleSignOut}
-                  className="flex-row items-center p-4 bg-red-50 rounded-lg"
+                  style={({ pressed }) => ({
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    padding: 20,
+                    backgroundColor: pressed ? '#fef2f2' : '#fef2f2',
+                    borderRadius: 20,
+                    borderWidth: 1,
+                    borderColor: '#fecaca',
+                    transform: [{ scale: pressed ? 0.98 : 1 }],
+                  })}
                 >
-                  <View className="w-10 h-10 bg-red-500 rounded-full justify-center items-center mr-4">
-                    <Ionicons name="log-out-outline" size={20} color="white" />
+                  <View style={{
+                    width: 48,
+                    height: 48,
+                    backgroundColor: '#ef4444',
+                    borderRadius: 24,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    marginRight: 16,
+                  }}>
+                    <Ionicons name="log-out" size={24} color="white" />
                   </View>
-                  <View className="flex-1">
-                    <Text className="text-red-600 font-medium">Sign Out</Text>
-                    <Text className="text-red-400 text-sm">Sign out of your account</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 16, fontWeight: '600', color: '#dc2626' }}>Sign Out</Text>
+                    <Text style={{ fontSize: 14, color: '#ef4444', marginTop: 2 }}>Sign out of your account</Text>
                   </View>
                 </Pressable>
               </View>
@@ -480,59 +776,130 @@ const Profile = () => {
 
         {/* Password Change Section */}
         {isChangingPassword && (
-          <View className="mx-4 mt-4 mb-6">
-            <View className="bg-white rounded-xl shadow-sm p-6">
-              <View className="flex-row items-center justify-between mb-4">
-                <Text className="text-lg font-semibold text-gray-900">Change Password</Text>
-                <Pressable onPress={() => setIsChangingPassword(false)}>
+          <View style={{ marginHorizontal: 20, marginTop: 24, marginBottom: 24 }}>
+            <View style={{
+              backgroundColor: 'white',
+              borderRadius: 24,
+              padding: 24,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.06,
+              shadowRadius: 16,
+              elevation: 8,
+            }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+                <Text style={{ fontSize: 20, fontWeight: '700', color: '#1e293b' }}>Change Password</Text>
+                <Pressable 
+                  onPress={() => setIsChangingPassword(false)}
+                  style={({ pressed }) => ({
+                    padding: 8,
+                    borderRadius: 12,
+                    backgroundColor: pressed ? '#fef2f2' : 'transparent',
+                    transform: [{ scale: pressed ? 0.9 : 1 }],
+                  })}
+                >
                   <Ionicons name="close" size={24} color="#ef4444" />
                 </Pressable>
               </View>
               
-              <View className="mb-4">
-                <Text className="text-gray-700 font-medium mb-2">Current Password</Text>
-                <View className="flex-row items-center border border-gray-300 rounded-lg px-4 bg-gray-50">
+              <View style={{ marginBottom: 20 }}>
+                <Text style={{ fontSize: 14, fontWeight: '600', color: '#64748b', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>Current Password</Text>
+                <View style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  borderWidth: 2,
+                  borderColor: '#e2e8f0',
+                  borderRadius: 16,
+                  paddingHorizontal: 16,
+                  backgroundColor: '#f8fafc',
+                }}>
                   <TextInput
                     value={passwordData.currentPassword}
                     onChangeText={(text) => setPasswordData({...passwordData, currentPassword: text})}
-                    className="flex-1 py-3 text-base"
+                    style={{
+                      flex: 1,
+                      paddingVertical: 16,
+                      fontSize: 16,
+                      color: '#1e293b',
+                      fontWeight: '500',
+                    }}
                     placeholder="Enter current password"
+                    placeholderTextColor="#94a3b8"
                     secureTextEntry={!showPassword.current}
                   />
-                  <Pressable onPress={() => setShowPassword(s => ({ ...s, current: !s.current }))}>
-                    <Ionicons name={showPassword.current ? "eye-off" : "eye"} size={20} color="gray" />
+                  <Pressable 
+                    onPress={() => setShowPassword(s => ({ ...s, current: !s.current }))}
+                    style={{ padding: 8 }}
+                  >
+                    <Ionicons name={showPassword.current ? "eye-off" : "eye"} size={20} color="#64748b" />
                   </Pressable>
                 </View>
               </View>
               
-              <View className="mb-4">
-                <Text className="text-gray-700 font-medium mb-2">New Password</Text>
-                <View className="flex-row items-center border border-gray-300 rounded-lg px-4 bg-gray-50">
+              <View style={{ marginBottom: 20 }}>
+                <Text style={{ fontSize: 14, fontWeight: '600', color: '#64748b', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>New Password</Text>
+                <View style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  borderWidth: 2,
+                  borderColor: '#e2e8f0',
+                  borderRadius: 16,
+                  paddingHorizontal: 16,
+                  backgroundColor: '#f8fafc',
+                }}>
                   <TextInput
                     value={passwordData.newPassword}
                     onChangeText={(text) => setPasswordData({...passwordData, newPassword: text})}
-                    className="flex-1 py-3 text-base"
+                    style={{
+                      flex: 1,
+                      paddingVertical: 16,
+                      fontSize: 16,
+                      color: '#1e293b',
+                      fontWeight: '500',
+                    }}
                     placeholder="Enter new password"
+                    placeholderTextColor="#94a3b8"
                     secureTextEntry={!showPassword.new}
                   />
-                  <Pressable onPress={() => setShowPassword(s => ({ ...s, new: !s.new }))}>
-                    <Ionicons name={showPassword.new ? "eye-off" : "eye"} size={20} color="gray" />
+                  <Pressable 
+                    onPress={() => setShowPassword(s => ({ ...s, new: !s.new }))}
+                    style={{ padding: 8 }}
+                  >
+                    <Ionicons name={showPassword.new ? "eye-off" : "eye"} size={20} color="#64748b" />
                   </Pressable>
                 </View>
               </View>
               
-              <View className="mb-6">
-                <Text className="text-gray-700 font-medium mb-2">Confirm New Password</Text>
-                <View className="flex-row items-center border border-gray-300 rounded-lg px-4 bg-gray-50">
+              <View style={{ marginBottom: 32 }}>
+                <Text style={{ fontSize: 14, fontWeight: '600', color: '#64748b', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>Confirm New Password</Text>
+                <View style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  borderWidth: 2,
+                  borderColor: '#e2e8f0',
+                  borderRadius: 16,
+                  paddingHorizontal: 16,
+                  backgroundColor: '#f8fafc',
+                }}>
                   <TextInput
                     value={passwordData.confirmPassword}
                     onChangeText={(text) => setPasswordData({...passwordData, confirmPassword: text})}
-                    className="flex-1 py-3 text-base"
+                    style={{
+                      flex: 1,
+                      paddingVertical: 16,
+                      fontSize: 16,
+                      color: '#1e293b',
+                      fontWeight: '500',
+                    }}
                     placeholder="Confirm new password"
+                    placeholderTextColor="#94a3b8"
                     secureTextEntry={!showPassword.confirm}
                   />
-                  <Pressable onPress={() => setShowPassword(s => ({ ...s, confirm: !s.confirm }))}>
-                    <Ionicons name={showPassword.confirm ? "eye-off" : "eye"} size={20} color="gray" />
+                  <Pressable 
+                    onPress={() => setShowPassword(s => ({ ...s, confirm: !s.confirm }))}
+                    style={{ padding: 8 }}
+                  >
+                    <Ionicons name={showPassword.confirm ? "eye-off" : "eye"} size={20} color="#64748b" />
                   </Pressable>
                 </View>
               </View>
@@ -540,17 +907,31 @@ const Profile = () => {
               <Pressable
                 onPress={handlePasswordChange}
                 disabled={loading}
-                className="bg-[#5badec] py-4 px-6 rounded-xl"
+                style={({ pressed }) => ({
+                  backgroundColor: pressed ? '#3b82f6' : '#5badec',
+                  paddingVertical: 18,
+                  paddingHorizontal: 24,
+                  borderRadius: 20,
+                  shadowColor: '#5badec',
+                  shadowOffset: { width: 0, height: 8 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 20,
+                  elevation: 12,
+                  transform: [{ scale: pressed ? 0.98 : 1 }],
+                })}
               >
                 {loading ? (
                   <ActivityIndicator size="small" color="white" />
                 ) : (
-                  <Text className="text-white text-center font-semibold text-lg">Update Password</Text>
+                  <Text style={{ color: 'white', textAlign: 'center', fontWeight: '700', fontSize: 18 }}>Update Password</Text>
                 )}
               </Pressable>
             </View>
           </View>
         )}
+        
+        {/* Bottom Spacing */}
+        <View style={{ height: 40 }} />
       </ScrollView>
     </SafeAreaView>
   )
