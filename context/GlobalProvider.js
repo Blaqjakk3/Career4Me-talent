@@ -47,11 +47,6 @@ const GlobalProvider = ({ children }) => {
         }
     };
 
-    const updateUser = async (newUser) => {
-        setUser(newUser);
-        await AsyncStorage.setItem("user", JSON.stringify(newUser));
-    };
-
     return (
         <GlobalContext.Provider
             value={{
@@ -59,7 +54,6 @@ const GlobalProvider = ({ children }) => {
                 setIsLoggedIn,
                 user,
                 setUser,
-                updateUser,
                 isLoading,
                 logOut,
             }}

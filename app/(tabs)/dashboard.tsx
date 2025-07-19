@@ -12,7 +12,7 @@ const { width } = Dimensions.get('window');
 const Dashboard = () => {
   const [quote, setQuote] = useState<{quote: string; author: string} | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const { user, setUser, updateUser } = useGlobalContext();
+  const { user, setUser } = useGlobalContext();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -23,8 +23,6 @@ const Dashboard = () => {
         const currentUser = await getCurrentUser();
         if (currentUser) {
           setUser(currentUser);
-          // Also update AsyncStorage with fresh data
-          await updateUser(currentUser);
         }
 
         const dailyQuote = await getDailyQuote();
