@@ -722,3 +722,65 @@ export const deleteAvatar = async () => {
     };
   }
 };
+export const runCareerMatch = async (surveyAnswers?: any) => {
+  try {
+    // Get the current user first
+    const currentUser = await getCurrentUser();
+    
+    if (!currentUser) {
+      throw new Error("User not authenticated");
+    }
+
+    // Prepare the payload with user ID and survey answers
+    const payload = {
+      userId: currentUser.talentId,
+      surveyAnswers: surveyAnswers || null
+    };
+
+    console.log('Sending payload to career match function:', {
+      userId: payload.userId,
+      hasSurveyAnswers: !!payload.surveyAnswers,
+      surveyAnswersKeys: payload.surveyAnswers ? Object.keys(payload.surveyAnswers) : []
+    });
+
+    // Execute the Appwrite function with user ID and survey answers in the payload
+    const response = await functions.createExecution(
+      'ai-career-matching', // Your function ID
+      JSON.stringify(payload),
+      false // Run synchronously
+    );
+    
+    console.log('Appwrite function response:', {
+      statusCode: response.responseStatusCode,
+      body: response.responseBody
+    });
+
+    if (response.responseStatusCode >= 400) {
+      throw new Error(response.responseBody || "Failed to run career match");
+    }
+
+    // Check if responseBody is empty
+    if (!response.responseBody || response.responseBody.trim() === '') {
+      throw new Error("Empty response from career match function");
+    }
+
+    // Parse the JSON response
+    let parsedResponse;
+    try {
+      parsedResponse = JSON.parse(response.responseBody);
+    } catch (parseError) {
+      console.error("JSON parse error:", parseError);
+      console.error("Response body:", response.responseBody);
+      throw new Error("Failed to parse response from career match function");
+    }
+
+    return parsedResponse;
+    
+  } catch (error: unknown) {
+    console.error("Error running career match:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "An unknown error occurred"
+    };
+  }
+};
