@@ -24,9 +24,11 @@ import {
   Query,
   account,
   saveJob,
-  isJobSaved
+  isJobSaved,
+  getCurrentUser
 } from '../../../lib/appwrite';
 import Header from '@/components/Header';
+import JobCompatibilityAnalyzer from '@/components/JobCompatibilityAnalyzer';
 
 // Define types
 type Job = {
@@ -68,11 +70,12 @@ const JobDetails = () => {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isSaved, setIsSaved] = useState<boolean>(false);
   const [savingJob, setSavingJob] = useState<boolean>(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   useEffect(() => {
     if (id) {
       fetchJobDetails(id as string);
-      getCurrentUser();
+      getCurrentAccount();
     }
   }, [id]);
 
@@ -82,7 +85,17 @@ const JobDetails = () => {
     }
   }, [job, currentUserId]);
 
-  const getCurrentUser = async () => {
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      if (currentUserId) {
+        const user = await getCurrentUser();
+        setCurrentUser(user);
+      }
+    };
+    fetchCurrentUser();
+  }, [currentUserId]);
+
+  const getCurrentAccount = async () => {
     try {
       const user = await account.get();
       setCurrentUserId(user.$id);
@@ -650,6 +663,14 @@ const JobDetails = () => {
               <ListItem key={`cert-${index}`} text={cert} />
             ))}
           </SectionCard>
+        )}
+
+        {/* Job Compatibility Analyzer */}
+        {currentUserId && job && currentUser && (
+          <JobCompatibilityAnalyzer 
+            job={job} 
+            currentUser={currentUser}
+          />
         )}
 
         {/* Bottom Apply Button */}
