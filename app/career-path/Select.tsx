@@ -6,7 +6,7 @@ import CareerPathCard from '@/components/CareerCard';
 import Header from '@/components/Header';
 
 const handleBackPress = () => {
-    router.back();
+    router.replace('/dashboard');
   };
 const CareerDiscovery: React.FC = () => {
   return (

@@ -27,7 +27,7 @@ const GlobalProvider = ({ children }) => {
                     }
                 }
             } catch (error) {
-                console.error("Error restoring session:", error);
+                // Error restoring session (silently fail)
             } finally {
                 setIsLoading(false);
             }

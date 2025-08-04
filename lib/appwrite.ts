@@ -483,6 +483,11 @@ export const updateUserProfile = async (profileData: {
   email: string;
   careerStage: string;
   avatar?: string;
+  degrees?: string[];
+  certifications?: string[];
+  skills?: string[];
+  interests?: string[];
+  interestedFields?: string[];
 }) => {
   try {
     // Get the current user
@@ -492,17 +497,27 @@ export const updateUserProfile = async (profileData: {
       throw new Error("User not authenticated");
     }
 
+    // Prepare update data
+    const updateData: any = {
+      fullname: profileData.fullname,
+      email: profileData.email,
+      careerStage: profileData.careerStage,
+    };
+
+    // Add optional fields if provided
+    if (profileData.avatar) updateData.avatar = profileData.avatar;
+    if (profileData.degrees) updateData.degrees = profileData.degrees;
+    if (profileData.certifications) updateData.certifications = profileData.certifications;
+    if (profileData.skills) updateData.skills = profileData.skills;
+    if (profileData.interests) updateData.interests = profileData.interests;
+    if (profileData.interestedFields) updateData.interestedFields = profileData.interestedFields;
+
     // Update the user document in the talents collection
     const updatedUser = await databases.updateDocument(
       config.databaseId,
       config.talentsCollectionId,
       currentUser.$id,
-      {
-        fullname: profileData.fullname,
-        email: profileData.email,
-        careerStage: profileData.careerStage,
-        ...(profileData.avatar && { avatar: profileData.avatar })
-      }
+      updateData
     );
 
     // Update the account name if it changed

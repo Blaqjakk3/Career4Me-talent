@@ -12,21 +12,23 @@ import { createUser } from "@/lib/appwrite"
 import CustomButton from "@/components/CustomButton"
 import { useGlobalContext } from "@/context/GlobalProvider"
 import { Ionicons } from "@expo/vector-icons"
-
+import SuccessModal from "@/components/SuccessModal"
 
 const SignUp = () => {
   const router = useRouter()
   const [form, setForm] = useState({
     fullname: "",
     email: "",
-    careerStage: "", // Add career stage to the form state
-    dateofBirth: new Date(), // Add date of birth to the form state
+    careerStage: "",
+    dateofBirth: new Date(),
     password: "",
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isDatePickerVisible, setDatePickerVisible] = useState(false) // State to control date picker visibility
-  const [isDropdownVisible, setDropdownVisible] = useState(false) // State to control dropdown visibility
-   const {isLoading, isLoggedIn} = useGlobalContext();
+  const [isDatePickerVisible, setDatePickerVisible] = useState(false)
+  const [isDropdownVisible, setDropdownVisible] = useState(false)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const {isLoading, isLoggedIn} = useGlobalContext();
+
   const submit = async () => {
     if(!form.fullname || !form.email || !form.careerStage || !form.dateofBirth || !form.password) {
       Alert.alert("Please fill in all fields")
@@ -35,10 +37,9 @@ const SignUp = () => {
     setIsSubmitting(true); 
     try {
       const result = await createUser(form.fullname, form.email, form.password, form.careerStage, form.dateofBirth.toISOString())
-     
-      // set it to global state
-
-      router.replace("/dashboard")
+      
+      // Show success modal instead of immediately navigating
+      setShowSuccessModal(true);
     } catch (error) {
       Alert.alert('Error', error.message)
     }finally{
@@ -46,6 +47,10 @@ const SignUp = () => {
     }
   }
 
+  const handleSuccessModalClose = () => {
+    setShowSuccessModal(false);
+    router.replace("/dashboard");
+  }
 
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current
@@ -65,13 +70,8 @@ const SignUp = () => {
       }),
     ]).start()
 
-    // Add keyboard listeners to adjust layout when keyboard appears
-    const keyboardDidShowListener = Keyboard.addListener("keyboardDidShow", () => {
-      // You could add animation here if needed
-    })
-    const keyboardDidHideListener = Keyboard.addListener("keyboardDidHide", () => {
-      // You could add animation here if needed
-    })
+    const keyboardDidShowListener = Keyboard.addListener("keyboardDidShow", () => {})
+    const keyboardDidHideListener = Keyboard.addListener("keyboardDidHide", () => {})
 
     return () => {
       keyboardDidShowListener.remove()
@@ -79,24 +79,19 @@ const SignUp = () => {
     }
   }, [])
 
-  
-
-  // Date picker handler
   const handleDateChange = (event: any, selectedDate?: Date) => {
-    setDatePickerVisible(false) // Hide the date picker
+    setDatePickerVisible(false)
     if (selectedDate) {
-      setForm({ ...form, dateofBirth: selectedDate }) // Update the form state with the selected date
+      setForm({ ...form, dateofBirth: selectedDate })
     }
   }
 
-  // Career stage options
   const careerStages = [
     { label: "Pathfinder", value: "Pathfinder", icon: "compass-outline", description: "Just starting the journey, exploring options" },
     { label: "Trailblazer", value: "Trailblazer", icon: "trending-up-outline", description: "Building expertise and progressing in their field" },
     { label: "Horizon Changer", value: "Horizon Changer", icon: "refresh-outline", description: "Pivoting into new domains, seeking new opportunities" },
   ]
 
-  // Get the selected career stage's icon
   const selectedCareerStage = careerStages.find((stage) => stage.value === form.careerStage)
 
   return (
@@ -109,7 +104,7 @@ const SignUp = () => {
             transform: [{ translateY: slideAnim }],
           }}
         >
-          {/* Sign In Header */}
+          {/* Sign Up Header */}
           <View className="mt-8 mb-10">
             <Text className="text-3xl font-bold text-gray-800">
               Sign Up to Career<Text className="text-[#5badec]">4Me</Text>
@@ -188,7 +183,7 @@ const SignUp = () => {
               <TouchableOpacity onPress={() => setDatePickerVisible(true)}>
                 <View className="w-full h-16 px-4 bg-gray-50 rounded-3xl border-2 border-black-100 border flex flex-row items-center">
                   <Text className="text-gray-400 text-base flex-1">
-                    {form.dateofBirth.toLocaleDateString()} {/* Display selected date */}
+                    {form.dateofBirth.toLocaleDateString()}
                   </Text>
                 </View>
               </TouchableOpacity>
@@ -214,14 +209,12 @@ const SignUp = () => {
 
             {/* Sign Up Button */}
             <View className="mt-8">
-              <Animated.View
-              >
+              <Animated.View>
                 <CustomButton
-           title="Sign Up"
-           handlePress={submit}
-           isLoading={isSubmitting}
-           />
-            
+                  title="Sign Up"
+                  handlePress={submit}
+                  isLoading={isSubmitting}
+                />
               </Animated.View>
             </View>
 
@@ -233,6 +226,15 @@ const SignUp = () => {
               </Link>
             </View>
           </KeyboardAvoidingView>
+
+          {/* Success Modal */}
+          <SuccessModal
+            visible={showSuccessModal}
+            onClose={handleSuccessModalClose}
+            title="Account Created Successfully!"
+            message="Welcome to Career4Me! Your account has been created and you're now signed in. Let's start your career journey!"
+            buttonText="Get Started"
+          />
         </Animated.View>
       </ScrollView>
     </SafeAreaView>
@@ -240,5 +242,3 @@ const SignUp = () => {
 }
 
 export default SignUp
-
-

@@ -6,13 +6,21 @@ import { useGlobalContext } from '../../context/GlobalProvider';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Link, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import SuccessModal from '@/components/SuccessModal';
+import PathRequiredModal from '@/components/PathRequiredModal';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width } = Dimensions.get('window');
 
 const Dashboard = () => {
   const [quote, setQuote] = useState<{quote: string; author: string} | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+  const [showPathRequiredModal, setShowPathRequiredModal] = useState(false);
   const { user, setUser } = useGlobalContext();
+
+  // Check if user has selected a career path
+  const hasSelectedPath = user?.selectedPath && user.selectedPath.trim() !== '';
 
   useEffect(() => {
     const fetchData = async () => {
@@ -23,6 +31,19 @@ const Dashboard = () => {
         const currentUser = await getCurrentUser();
         if (currentUser) {
           setUser(currentUser);
+          
+          // Check if this is a new user without a selected path
+          if (!currentUser.selectedPath || currentUser.selectedPath.trim() === '') {
+            // Check if welcome modal has already been shown for this user
+            const welcomeModalShown = await AsyncStorage.getItem(`welcomeModalShown_${currentUser.talentId}`);
+            
+            if (!welcomeModalShown) {
+              // Small delay to let the dashboard render first
+              setTimeout(() => {
+                setShowWelcomeModal(true);
+              }, 1000);
+            }
+          }
         }
 
         const dailyQuote = await getDailyQuote();
@@ -36,6 +57,19 @@ const Dashboard = () => {
 
     fetchData();
   }, []);
+
+  const handleWelcomeModalClose = async () => {
+    setShowWelcomeModal(false);
+    
+    // Mark welcome modal as shown for this user
+    if (user?.talentId) {
+      await AsyncStorage.setItem(`welcomeModalShown_${user.talentId}`, 'true');
+    }
+  };
+
+  const handleRestrictedFeatureClick = () => {
+    setShowPathRequiredModal(true);
+  };
 
   // Show loading state while fetching user data
   if (loading || !user) {
@@ -56,7 +90,8 @@ const Dashboard = () => {
       description: 'Discover career paths that match your skills',
       key: 'career-path',
       colors: ['#5badec', '#4a9bd1'],
-      href: '/career-path'
+      href: '/career-path',
+      isRestricted: false
     },
     { 
       title: 'Learning Roadmap', 
@@ -64,7 +99,8 @@ const Dashboard = () => {
       description: 'Curated courses to boost your knowledge',
       key: 'learning',
       colors: ['#6c5ce7', '#5a4fcf'],
-      href: '/learning'
+      href: '/learning',
+      isRestricted: !hasSelectedPath
     },
     { 
       title: 'Jobs for You', 
@@ -72,7 +108,8 @@ const Dashboard = () => {
       description: 'Find your next career opportunity',
       key: 'jobs',
       colors: ['#00b894', '#00a085'],
-      href: '/jobs'
+      href: '/jobs',
+      isRestricted: !hasSelectedPath
     }
   ];
 
@@ -82,23 +119,140 @@ const Dashboard = () => {
       icon: 'document-text',
       description: 'Get expert feedback on your resume',
       key: 'analysis',
-      href: '/analysis'
+      href: '/analysis',
+      isRestricted: !hasSelectedPath
     },
     { 
       title: 'CV Generation', 
       icon: 'create-outline',
       description: 'Create a professional CV in minutes',
       key: 'cvgeneration',
-      href: 'cvgeneration'
+      href: 'cvgeneration',
+      isRestricted: !hasSelectedPath
     },
     { 
       title: 'Interview Prep', 
       icon: 'chatbubble-ellipses',
       description: 'Practice with AI-powered mock interviews',
       key: 'interview-prep',
-      href: '/interview-prep'
+      href: '/interview-prep',
+      isRestricted: !hasSelectedPath
     },
   ];
+
+  const renderPrimaryActionCard = (item: any, index: number) => {
+    if (item.isRestricted) {
+      return (
+        <TouchableOpacity 
+          key={item.key}
+          style={[
+            styles.primaryActionCard,
+            index === 2 && styles.fullWidthCard,
+            styles.disabledCard
+          ]} 
+          activeOpacity={0.6}
+          onPress={handleRestrictedFeatureClick}
+        >
+          <LinearGradient
+            colors={['#e2e8f0', '#cbd5e1']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.primaryActionGradient}
+          >
+            <View style={styles.primaryActionContent}>
+              <View style={[styles.primaryActionIcon, styles.disabledIcon]}>
+                <Ionicons name={item.icon as any} size={28} color="#94a3b8" />
+              </View>
+              <Text style={[styles.primaryActionTitle, styles.disabledText]}>{item.title}</Text>
+              <Text style={[styles.primaryActionDescription, styles.disabledDescription]}>
+                {item.description}
+              </Text>
+            </View>
+            <View style={styles.primaryActionArrow}>
+              <Ionicons name="lock-closed" size={18} color="#94a3b8" />
+            </View>
+          </LinearGradient>
+        </TouchableOpacity>
+      );
+    }
+
+    return (
+      <Link key={item.key} href={item.href} asChild>
+        <TouchableOpacity 
+          style={[
+            styles.primaryActionCard,
+            index === 2 && styles.fullWidthCard
+          ]} 
+          activeOpacity={0.8}
+        >
+          <LinearGradient
+            colors={item.colors}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.primaryActionGradient}
+          >
+            <View style={styles.primaryActionContent}>
+              <View style={styles.primaryActionIcon}>
+                <Ionicons name={item.icon as any} size={28} color="#fff" />
+              </View>
+              <Text style={styles.primaryActionTitle}>{item.title}</Text>
+              <Text style={styles.primaryActionDescription}>
+                {item.description}
+              </Text>
+            </View>
+            <View style={styles.primaryActionArrow}>
+              <Ionicons name="arrow-forward" size={18} color="rgba(255,255,255,0.8)" />
+            </View>
+          </LinearGradient>
+        </TouchableOpacity>
+      </Link>
+    );
+  };
+
+  const renderSecondaryActionCard = (item: any) => {
+    if (item.isRestricted) {
+      return (
+        <TouchableOpacity 
+          key={item.key} 
+          style={[styles.secondaryActionCard, styles.disabledCard]} 
+          activeOpacity={0.6}
+          onPress={handleRestrictedFeatureClick}
+        >
+          <View style={styles.secondaryActionContent}>
+            <View style={[styles.secondaryActionIcon, styles.disabledSecondaryIcon]}>
+              <Ionicons name={item.icon as any} size={24} color="#94a3b8" />
+            </View>
+            <View style={styles.secondaryActionText}>
+              <Text style={[styles.secondaryActionTitle, styles.disabledText]}>{item.title}</Text>
+              <Text style={[styles.secondaryActionDescription, styles.disabledDescription]}>
+                {item.description}
+              </Text>
+            </View>
+            <Ionicons name="lock-closed" size={20} color="#94a3b8" />
+          </View>
+        </TouchableOpacity>
+      );
+    }
+
+    return (
+      <Link key={item.key} href={item.href} asChild>
+        <TouchableOpacity style={styles.secondaryActionCard} activeOpacity={0.8}>
+          <View style={styles.secondaryActionContent}>
+            <View style={styles.secondaryActionIcon}>
+              <Ionicons name={item.icon as any} size={24} color="#5badec" />
+            </View>
+            <View style={styles.secondaryActionText}>
+              <Text style={styles.secondaryActionTitle}>{item.title}</Text>
+              <Text style={styles.secondaryActionDescription}>
+                {item.description}
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#5badec" />
+          </View>
+        </TouchableOpacity>
+      </Link>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -140,6 +294,16 @@ const Dashboard = () => {
                 </View>
               </View>
               
+              {/* Path status indicator */}
+              {!hasSelectedPath && (
+                <View style={styles.pathStatusContainer}>
+                  <View style={styles.pathStatusBadge}>
+                    <Ionicons name="compass" size={16} color="#ff6b6b" />
+                    <Text style={styles.pathStatusText}>No Path Selected</Text>
+                  </View>
+                </View>
+              )}
+              
               {/* Floating elements for visual interest */}
               <View style={styles.floatingElements}>
                 <View style={[styles.floatingCircle, styles.circle1]} />
@@ -175,37 +339,7 @@ const Dashboard = () => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Your Career Journey</Text>
           <View style={styles.primaryActionsGrid}>
-            {primaryActions.map((item, index) => (
-              <Link key={item.key} href={item.href} asChild>
-                <TouchableOpacity 
-                  style={[
-                    styles.primaryActionCard,
-                    index === 2 && styles.fullWidthCard
-                  ]} 
-                  activeOpacity={0.8}
-                >
-                  <LinearGradient
-                    colors={item.colors}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={styles.primaryActionGradient}
-                  >
-                    <View style={styles.primaryActionContent}>
-                      <View style={styles.primaryActionIcon}>
-                        <Ionicons name={item.icon as any} size={28} color="#fff" />
-                      </View>
-                      <Text style={styles.primaryActionTitle}>{item.title}</Text>
-                      <Text style={styles.primaryActionDescription}>
-                        {item.description}
-                      </Text>
-                    </View>
-                    <View style={styles.primaryActionArrow}>
-                      <Ionicons name="arrow-forward" size={18} color="rgba(255,255,255,0.8)" />
-                    </View>
-                  </LinearGradient>
-                </TouchableOpacity>
-              </Link>
-            ))}
+            {primaryActions.map((item, index) => renderPrimaryActionCard(item, index))}
           </View>
         </View>
 
@@ -213,27 +347,25 @@ const Dashboard = () => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Additional Tools</Text>
           <View style={styles.secondaryActionsContainer}>
-            {secondaryActions.map((item) => (
-              <Link key={item.key} href={item.href} asChild>
-                <TouchableOpacity style={styles.secondaryActionCard} activeOpacity={0.8}>
-                  <View style={styles.secondaryActionContent}>
-                    <View style={styles.secondaryActionIcon}>
-                      <Ionicons name={item.icon as any} size={24} color="#5badec" />
-                    </View>
-                    <View style={styles.secondaryActionText}>
-                      <Text style={styles.secondaryActionTitle}>{item.title}</Text>
-                      <Text style={styles.secondaryActionDescription}>
-                        {item.description}
-                      </Text>
-                    </View>
-                    <Ionicons name="chevron-forward" size={20} color="#5badec" />
-                  </View>
-                </TouchableOpacity>
-              </Link>
-            ))}
+            {secondaryActions.map((item) => renderSecondaryActionCard(item))}
           </View>
         </View>
       </ScrollView>
+
+      {/* Welcome Modal for new users */}
+      <SuccessModal
+        visible={showWelcomeModal}
+        onClose={handleWelcomeModalClose}
+        title="Welcome to Career4Me!"
+        message="To get the most out of our platform, we recommend starting by exploring career paths that match your interests and skills."
+        buttonText="Got it!"
+      />
+
+      {/* Path Required Modal */}
+      <PathRequiredModal
+        visible={showPathRequiredModal}
+        onClose={() => setShowPathRequiredModal(false)}
+      />
     </SafeAreaView>
   );
 };
@@ -327,6 +459,26 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: 'rgba(255,255,255,0.9)',
     marginTop: 2,
+  },
+  pathStatusContainer: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    zIndex: 15,
+  },
+  pathStatusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  pathStatusText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#ff6b6b',
+    marginLeft: 4,
   },
   floatingElements: {
     position: 'absolute',
@@ -441,6 +593,9 @@ const styles = StyleSheet.create({
   fullWidthCard: {
     width: width - 48,
   },
+  disabledCard: {
+    opacity: 0.6,
+  },
   primaryActionGradient: {
     padding: 20,
     minHeight: 140,
@@ -458,16 +613,25 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 16,
   },
+  disabledIcon: {
+    backgroundColor: 'rgba(148, 163, 184, 0.2)',
+  },
   primaryActionTitle: {
     fontSize: 16,
     fontWeight: '700',
     color: '#fff',
     marginBottom: 4,
   },
+  disabledText: {
+    color: '#94a3b8',
+  },
   primaryActionDescription: {
     fontSize: 12,
     color: 'rgba(255,255,255,0.9)',
     lineHeight: 16,
+  },
+  disabledDescription: {
+    color: '#94a3b8',
   },
   primaryActionArrow: {
     position: 'absolute',
@@ -499,6 +663,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 16,
+  },
+  disabledSecondaryIcon: {
+    backgroundColor: 'rgba(148, 163, 184, 0.1)',
   },
   secondaryActionText: {
     flex: 1,
