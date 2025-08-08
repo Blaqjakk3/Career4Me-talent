@@ -27,7 +27,6 @@ const CareerCard: React.FC<CareerCardProps> = ({
   const [isSaved, setIsSaved] = useState<boolean>(false);
   const [isSelected, setIsSelected] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isChecking, setIsChecking] = useState<boolean>(true);
   const visibleSkills = skills.slice(0, 3);
   const remainingSkillsCount = Math.max(0, skills.length - 3);
 
@@ -42,8 +41,9 @@ const CareerCard: React.FC<CareerCardProps> = ({
         setIsSelected(selected);
       } catch (error) {
         console.error("Error checking status:", error);
-      } finally {
-        setIsChecking(false);
+        // Set default values on error
+        setIsSaved(false);
+        setIsSelected(false);
       }
     };
     checkStatus();
@@ -76,14 +76,6 @@ const CareerCard: React.FC<CareerCardProps> = ({
     }
   };
 
-  if (isChecking) {
-    return (
-      <View style={{ padding: 16, alignItems: 'center' }}>
-        <ActivityIndicator size="small" color="#5badec" />
-      </View>
-    );
-  }
-
   // Ensure we have valid strings for display
   const displayTitle = title || 'Untitled Career Path';
   const displayDescription = description || 'No description available';
@@ -94,7 +86,6 @@ const CareerCard: React.FC<CareerCardProps> = ({
         backgroundColor: '#fff',
         borderRadius: 12,
         padding: 16,
-        margin: 8,
         shadowColor: '#000',
         shadowOpacity: 0.1,
         shadowOffset: { width: 0, height: 1 },

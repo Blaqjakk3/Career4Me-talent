@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, SafeAreaView } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, TextInput, SafeAreaView } from 'react-native';
 import { Feather, MaterialIcons, Ionicons } from '@expo/vector-icons';
 import CareerCard from '@/components/careerpathcard';
+import CareerCardSkeleton from '@/components/CareerCardSkeleton.';// Import the skeleton component
 import { databases, Query, config } from '@/lib/appwrite';
 import { router } from 'expo-router';
 import Toast from '@/components/Toast';
@@ -215,17 +216,17 @@ const CareerBrowse = () => {
 
       <View style={{ flex: 1, paddingHorizontal: 12, paddingTop: 8, paddingBottom: 12 }}>
         {loading ? (
-          <View style={{
-            flex: 1,
-            justifyContent: 'center',
-            alignItems: 'center',
-            paddingVertical: 20
-          }}>
-            <ActivityIndicator size="large" color="#5badec" />
-            <Text style={{ marginTop: 8, color: '#6b7280' }}>
-              Loading career paths...
-            </Text>
-          </View>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 16 }}
+          >
+            {/* Show 3-4 skeleton cards while loading */}
+            {Array.from({ length: 4 }, (_, index) => (
+              <View key={`skeleton-${index}`} style={{ marginBottom: 12 }}>
+                <CareerCardSkeleton />
+              </View>
+            ))}
+          </ScrollView>
         ) : careerPaths.length === 0 ? (
           <View style={{
             flex: 1,
