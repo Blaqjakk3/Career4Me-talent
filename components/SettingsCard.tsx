@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, Pressable, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 
 interface SettingsCardProps {
   onPasswordChange: () => void;
@@ -57,11 +58,40 @@ const SettingsCard: React.FC<SettingsCardProps> = ({
           <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
         </Pressable>
 
+        {/* Pending Applications */}
+        <Pressable
+          onPress={() => router.push('/jobs/pendingapplications')}
+          style={({ pressed }) => ({
+            flexDirection: 'row',
+            alignItems: 'center',
+            padding: 20,
+            backgroundColor: pressed ? '#f8fafc' : '#f1f5f9',
+            borderRadius: 20,
+            marginBottom: 16,
+            transform: [{ scale: pressed ? 0.98 : 1 }],
+          })}
+        >
+          <View style={{
+            width: 48,
+            height: 48,
+            backgroundColor: '#f59e0b',
+            borderRadius: 24,
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginRight: 16,
+          }}>
+            <Ionicons name="hourglass-outline" size={24} color="white" />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 16, fontWeight: '600', color: '#1e293b' }}>Pending Applications</Text>
+            <Text style={{ fontSize: 14, color: '#64748b', marginTop: 2 }}>View your submitted applications</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+        </Pressable>
+
         {/* Notifications */}
         <Pressable
-          onPress={() => {
-            Alert.alert('Coming Soon', 'Notifications settings will be available soon');
-          }}
+          onPress={() => router.push('/notifications')}
           style={({ pressed }) => ({
             flexDirection: 'row',
             alignItems: 'center',
@@ -125,4 +155,4 @@ const SettingsCard: React.FC<SettingsCardProps> = ({
   );
 };
 
-export default SettingsCard; 
+export default SettingsCard;

@@ -22,6 +22,9 @@ export const config = {
   topicsCollectionId: 'topics',
   learningStagesId: 'learningStages',
   careerPathsCollectionId: 'careerPaths',
+  applicationsCollectionId: 'applications',
+  talentNotificationsCollectionId: 'talentNotifications',
+  employerNotificationsCollectionId: 'employerNotifications',
   storageId: 'avatars',
 }
 
@@ -798,4 +801,366 @@ export const runCareerMatch = async (surveyAnswers?: any) => {
       error: error instanceof Error ? error.message : "An unknown error occurred"
     };
   }
+};
+
+export const uploadFile = async (file) => {
+  try {
+    const uploadedFile = await storage.createFile(
+      config.storageId,
+      ID.unique(),
+      file
+    );
+    return storage.getFileView(config.storageId, uploadedFile.$id);
+  } catch (error) {
+    console.error('Error uploading file:', error);
+    throw new Error('Failed to upload file.');
+  }
+};
+
+export const createApplication = async (applicationData) => {
+  try {
+    return await databases.createDocument(
+      config.databaseId,
+      config.applicationsCollectionId,
+      ID.unique(),
+      applicationData
+    );
+  } catch (error) {
+    console.error('Error creating application:', error);
+    throw new Error('Failed to create application.');
+  }
+};
+
+export const createEmployerNotification = async (notificationData) => {
+  try {
+    return await databases.createDocument(
+      config.databaseId,
+      config.employerNotificationsCollectionId,
+      ID.unique(),
+      {
+        ...notificationData,
+        createdAt: new Date().toISOString(),
+        isRead: false
+      }
+    );
+  } catch (error) {
+    console.error('Error creating employer notification:', error);
+    throw new Error('Failed to create employer notification.');
+  }
+};
+
+export const createTalentNotification = async (notificationData) => {
+  try {
+    return await databases.createDocument(
+      config.databaseId,
+      config.talentNotificationsCollectionId,
+      ID.unique(),
+      {
+        ...notificationData,
+        createdAt: new Date().toISOString(),
+        isRead: false
+      }
+    );
+  } catch (error) {
+    console.error('Error creating talent notification:', error);
+    throw new Error('Failed to create talent notification.');
+  }
+};
+
+export const getTalentApplications = async (talentId) => {
+    try {
+        const response = await databases.listDocuments(
+            config.databaseId,
+            config.applicationsCollectionId,
+            [Query.equal('talentId', talentId)]
+        );
+        return response.documents;
+    } catch (error) {
+        console.error('Error fetching talent applications:', error);
+        throw new Error('Failed to fetch talent applications.');
+    }
+};
+
+export const getJobById = async (jobId) => {
+    try {
+        const job = await databases.getDocument(
+            config.databaseId,
+            config.jobsCollectionId,
+            jobId
+        );
+        return job;
+    } catch (error) {
+        console.error('Error fetching job by ID:', error);
+        throw new Error('Failed to fetch job details.');
+    }
+};
+
+export const updateApplicationStatus = async (applicationId, status) => {
+    try {
+        return await databases.updateDocument(
+            config.databaseId,
+            config.applicationsCollectionId,
+            applicationId,
+            { status }
+        );
+    } catch (error) {
+        console.error('Error updating application status:', error);
+        throw new Error('Failed to update application status.');
+    }
+};
+
+/**
+ * Checks if a talent has already applied to a specific job with pending or shortlisted status
+ * @param talentId - The ID of the talent
+ * @param jobId - The ID of the job
+ * @returns Object with hasApplied boolean and application details if exists
+ */
+export const checkExistingApplication = async (talentId: string, jobId: string) => {
+    try {
+        const response = await databases.listDocuments(
+            config.databaseId,
+            config.applicationsCollectionId,
+            [
+                Query.equal('talentId', talentId),
+                Query.equal('jobId', jobId),
+                Query.equal('status', ['pending', 'shortlisted'])
+            ]
+        );
+
+        if (response.documents.length > 0) {
+            const result = {
+                hasApplied: true,
+                application: response.documents[0],
+                status: response.documents[0].status
+            };
+            return result;
+        }
+
+        const result = {
+            hasApplied: false,
+            application: null,
+            status: null
+        };
+        return result;
+    } catch (error) {
+        console.error('Error checking existing application:', error);
+        // Return false on error to allow application attempt
+        return {
+            hasApplied: false,
+            application: null,
+            status: null
+        };
+    }
+};
+
+/**
+ * Gets the application status for a talent and job (including all statuses)
+ * @param talentId - The ID of the talent
+ * @param jobId - The ID of the job
+ * @returns Object with application details if exists
+ */
+export const getTalentJobApplicationStatus = async (talentId: string, jobId: string) => {
+    try {
+        const response = await databases.listDocuments(
+            config.databaseId,
+            config.applicationsCollectionId,
+            [
+                Query.equal('talentId', talentId),
+                Query.equal('jobId', jobId)
+            ]
+        );
+
+        if (response.documents.length > 0) {
+            // Return the most recent application (in case there are multiple)
+            const sortedApplications = response.documents.sort((a, b) =>
+                new Date(b.applicationDate).getTime() - new Date(a.applicationDate).getTime()
+            );
+
+            return {
+                hasApplication: true,
+                application: sortedApplications[0],
+                status: sortedApplications[0].status
+            };
+        }
+
+        return {
+            hasApplication: false,
+            application: null,
+            status: null
+        };
+    } catch (error) {
+        console.error('Error getting talent job application status:', error);
+        return {
+            hasApplication: false,
+            application: null,
+            status: null
+        };
+    }
+};
+
+/**
+ * Debug function to test application queries
+ * @param talentId - The ID of the talent
+ * @param jobId - The ID of the job
+ */
+export const debugApplicationQuery = async (talentId: string, jobId: string) => {
+    try {
+        console.log('=== DEBUG APPLICATION QUERY ===');
+        console.log('Input parameters:', { talentId, jobId });
+        console.log('Database config:', {
+            databaseId: config.databaseId,
+            applicationsCollectionId: config.applicationsCollectionId
+        });
+
+        // First, get ALL applications for this talent
+        const allTalentApplications = await databases.listDocuments(
+            config.databaseId,
+            config.applicationsCollectionId,
+            [Query.equal('talentId', talentId)]
+        );
+
+        console.log('All applications for talent:', {
+            count: allTalentApplications.documents.length,
+            applications: allTalentApplications.documents.map(app => ({
+                id: app.$id,
+                talentId: app.talentId,
+                jobId: app.jobId,
+                status: app.status,
+                applicationDate: app.applicationDate
+            }))
+        });
+
+        // Then, get applications for this specific job
+        const jobApplications = await databases.listDocuments(
+            config.databaseId,
+            config.applicationsCollectionId,
+            [
+                Query.equal('talentId', talentId),
+                Query.equal('jobId', jobId)
+            ]
+        );
+
+        console.log('Applications for this job:', {
+            count: jobApplications.documents.length,
+            applications: jobApplications.documents.map(app => ({
+                id: app.$id,
+                talentId: app.talentId,
+                jobId: app.jobId,
+                status: app.status,
+                applicationDate: app.applicationDate
+            }))
+        });
+
+        // Finally, get pending/shortlisted applications for this job
+        const pendingApplications = await databases.listDocuments(
+            config.databaseId,
+            config.applicationsCollectionId,
+            [
+                Query.equal('talentId', talentId),
+                Query.equal('jobId', jobId),
+                Query.equal('status', ['pending', 'shortlisted'])
+            ]
+        );
+
+        console.log('Pending/shortlisted applications for this job:', {
+            count: pendingApplications.documents.length,
+            applications: pendingApplications.documents.map(app => ({
+                id: app.$id,
+                talentId: app.talentId,
+                jobId: app.jobId,
+                status: app.status,
+                applicationDate: app.applicationDate
+            }))
+        });
+
+        console.log('=== END DEBUG ===');
+
+        return {
+            allTalentApplications: allTalentApplications.documents.length,
+            jobApplications: jobApplications.documents.length,
+            pendingApplications: pendingApplications.documents.length
+        };
+    } catch (error) {
+        console.error('Debug query error:', error);
+        return { error: error.message };
+    }
+};
+
+export const updateApplicationStatusWithNotification = async (applicationId, status, jobTitle = 'a job') => {
+    try {
+        // First, get the application to get the talentId
+        const application = await databases.getDocument(
+            config.databaseId,
+            config.applicationsCollectionId,
+            applicationId
+        );
+
+        // Update the application status
+        const updatedApplication = await databases.updateDocument(
+            config.databaseId,
+            config.applicationsCollectionId,
+            applicationId,
+            { status }
+        );
+
+        // Create a notification for the talent
+        let notificationTitle = '';
+        let notificationMessage = '';
+
+        switch (status) {
+            case 'shortlisted':
+                notificationTitle = 'Application Shortlisted!';
+                notificationMessage = `Great news! Your application for ${jobTitle} has been shortlisted.`;
+                break;
+            case 'rejected':
+                notificationTitle = 'Application Update';
+                notificationMessage = `Your application for ${jobTitle} was not selected this time. Keep applying!`;
+                break;
+            default:
+                notificationTitle = 'Application Status Update';
+                notificationMessage = `Your application for ${jobTitle} status has been updated to ${status}.`;
+        }
+
+        await createTalentNotification({
+            talentId: application.talentId,
+            type: 'application_status',
+            title: notificationTitle,
+            message: notificationMessage,
+            relatedJobId: application.jobId,
+            relatedApplicationId: applicationId
+        });
+
+        return updatedApplication;
+    } catch (error) {
+        console.error('Error updating application status with notification:', error);
+        throw new Error('Failed to update application status.');
+    }
+};
+
+export const getTalentNotifications = async (talentId) => {
+    try {
+        const response = await databases.listDocuments(
+            config.databaseId,
+            config.talentNotificationsCollectionId,
+            [Query.equal('talentId', talentId)]
+        );
+        return response.documents;
+    } catch (error) {
+        console.error('Error fetching talent notifications:', error);
+        throw new Error('Failed to fetch talent notifications.');
+    }
+};
+
+export const updateNotificationStatus = async (notificationId, isRead) => {
+    try {
+        return await databases.updateDocument(
+            config.databaseId,
+            config.talentNotificationsCollectionId,
+            notificationId,
+            { isRead }
+        );
+    } catch (error) {
+        console.error('Error updating notification status:', error);
+        throw new Error('Failed to update notification status.');
+    }
 };

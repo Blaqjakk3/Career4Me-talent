@@ -25,10 +25,12 @@ import {
   account,
   saveJob,
   isJobSaved,
-  getCurrentUser
+  getCurrentUser,
+  checkExistingApplication
 } from '../../../lib/appwrite';
 import Header from '@/components/Header';
 import JobCompatibilityAnalyzer from '@/components/JobCompatibilityAnalyzer';
+import QuickApplyModal from '@/components/QuickApplyModal';
 
 // Define types
 type Job = {
@@ -50,6 +52,7 @@ type Job = {
   numViews?: number;
   numClicks?: number;
   clickers?: string[]; // Add this to track user IDs who clicked
+  allowCareer4MeApplications?: boolean;
 };
 
 type Employer = {
@@ -71,6 +74,9 @@ const JobDetails = () => {
   const [isSaved, setIsSaved] = useState<boolean>(false);
   const [savingJob, setSavingJob] = useState<boolean>(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [isQuickApplyModalVisible, setQuickApplyModalVisible] = useState(false);
+  const [hasApplied, setHasApplied] = useState<boolean>(false);
+  const [applicationStatus, setApplicationStatus] = useState<string | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -95,12 +101,32 @@ const JobDetails = () => {
     fetchCurrentUser();
   }, [currentUserId]);
 
+  useEffect(() => {
+    if (job && currentUser) {
+      checkApplicationStatus();
+    }
+  }, [job, currentUser]);
+
+  const checkApplicationStatus = async () => {
+    if (!job || !currentUser) {
+      return;
+    }
+
+    try {
+      const existingApplication = await checkExistingApplication(currentUser.talentId, job.$id);
+
+      setHasApplied(existingApplication.hasApplied);
+      setApplicationStatus(existingApplication.status);
+    } catch (error) {
+      // Handle error silently or show user-friendly message
+    }
+  };
+
   const getCurrentAccount = async () => {
     try {
       const user = await account.get();
       setCurrentUserId(user.$id);
     } catch (error) {
-      console.error('Error getting current user:', error);
       // Handle case where user is not authenticated
       setCurrentUserId(null);
     }
@@ -113,7 +139,7 @@ const JobDetails = () => {
       const saved = await isJobSaved(job.$id);
       setIsSaved(saved);
     } catch (error) {
-      console.error('Error checking if job is saved:', error);
+      // Handle error silently
     }
   };
 
@@ -147,7 +173,6 @@ const JobDetails = () => {
 
       setLoading(false);
     } catch (error) {
-      console.error('Error fetching job details:', error);
       setLoading(false);
     }
   };
@@ -174,7 +199,6 @@ const JobDetails = () => {
         Alert.alert('Error', result.error || 'Failed to save job. Please try again.');
       }
     } catch (error) {
-      console.error('Error saving job:', error);
       Alert.alert('Error', 'Failed to save job. Please try again.');
     } finally {
       setSavingJob(false);
@@ -226,7 +250,6 @@ const JobDetails = () => {
         Alert.alert('Error', 'Cannot open this application link. Please try again later.');
       }
     } catch (error) {
-      console.error('Error handling apply:', error);
       Alert.alert('Error', 'Failed to open application link. Please try again later.');
     }
   };
@@ -544,31 +567,85 @@ const JobDetails = () => {
             </View>
           </View>
 
-          {/* Quick Actions - Updated to include Document Analysis */}
-          <View style={{ flexDirection: 'row', marginBottom: 20 }}>
-            <ActionButton
-              onPress={handleApply}
-              icon={<Feather name="external-link" size={18} color="white" />}
-              label="Apply Now"
-              variant="filled"
-            />
-            <ActionButton
-              onPress={handleSaveJob}
-              icon={
-                savingJob ? (
-                  <ActivityIndicator size={18} color="#5badec" />
-                ) : (
-                  <AntDesign 
-                    name={isSaved ? "heart" : "hearto"}
-                    size={18} 
-                    color="#5badec"
+          {/* Quick Actions */}
+          <View style={{ marginHorizontal: 16, marginBottom: 20 }}>
+            {job.allowCareer4MeApplications && hasApplied ? (
+              <View style={{
+                backgroundColor: applicationStatus === 'pending' ? '#F59E0B' : '#10B981',
+                borderRadius: 12,
+                paddingVertical: 12,
+                paddingHorizontal: 16,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                <Feather name={applicationStatus === 'pending' ? "clock" : "check-circle"} size={18} color="white" />
+                <Text style={{
+                  color: 'white',
+                  fontWeight: '600',
+                  fontSize: 14,
+                  marginLeft: 8
+                }}>
+                  {applicationStatus === 'pending' ? 'Application Pending' : 'Application Shortlisted'}
+                </Text>
+              </View>
+            ) : (
+              <>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                  {job.applylink && (!job.allowCareer4MeApplications || hasApplied) && (
+                    <ActionButton
+                      onPress={handleApply}
+                      icon={<Feather name="external-link" size={18} color="#5badec" />}
+                      label="Apply Now"
+                      variant="outline"
+                    />
+                  )}
+                  {job.applylink && job.allowCareer4MeApplications && !hasApplied &&(
+                    <ActionButton
+                      onPress={handleApply}
+                      icon={<Feather name="external-link" size={18} color="#5badec" />}
+                      label="Apply via link"
+                      variant="outline"
+                    />
+                  )}
+                  {!job.applylink && job.allowCareer4MeApplications && !hasApplied && (
+                    <ActionButton
+                      onPress={() => setQuickApplyModalVisible(true)}
+                      icon={<Feather name="send" size={18} color="white" />}
+                      label="Quick Apply"
+                      variant="filled"
+                    />
+                  )}
+                  <ActionButton
+                    onPress={handleSaveJob}
+                    icon={
+                      savingJob ? (
+                        <ActivityIndicator size={18} color="#5badec" />
+                      ) : (
+                        <AntDesign
+                          name={isSaved ? "heart" : "hearto"}
+                          size={18}
+                          color="#5badec"
+                        />
+                      )
+                    }
+                    label={isSaved ? "Saved" : "Save"}
+                    variant="outline"
+                    disabled={savingJob}
                   />
-                )
-              }
-              label={isSaved ? "Saved" : "Save"}
-              variant="outline"
-              disabled={savingJob}
-            />
+                </View>
+                {job.applylink && job.allowCareer4MeApplications && !hasApplied && (
+                  <View style={{ marginTop: 12, alignItems: 'center' }}>
+                    <ActionButton
+                      onPress={() => setQuickApplyModalVisible(true)}
+                      icon={<Feather name="send" size={18} color="white" />}
+                      label="Quick Apply"
+                      variant="filled"
+                    />
+                  </View>
+                )}
+              </>
+            )}
           </View>
         </View>
 
@@ -673,36 +750,18 @@ const JobDetails = () => {
           />
         )}
 
-        {/* Bottom Apply Button */}
-        <View style={{ paddingHorizontal: 20, paddingVertical: 24 }}>
-          <TouchableOpacity 
-            style={{
-              backgroundColor: '#5badec',
-              borderRadius: 16,
-              paddingVertical: 18,
-              paddingHorizontal: 24,
-              alignItems: 'center',
-              flexDirection: 'row',
-              justifyContent: 'center',
-              shadowColor: '#5badec',
-              shadowOffset: { width: 0, height: 6 },
-              shadowOpacity: 0.4,
-              shadowRadius: 12,
-              elevation: 8,
-            }}
-            onPress={handleApply}
-          >
-            <Feather name="external-link" size={20} color="white" />
-            <Text style={{
-              color: 'white',
-              fontWeight: '700',
-              fontSize: 18,
-              marginLeft: 12
-            }}>
-              Apply for this Position
-            </Text>
-          </TouchableOpacity>
-        </View>
+
+
+        {/* Quick Apply Modal */}
+        {job.allowCareer4MeApplications && (
+          <QuickApplyModal
+            isVisible={isQuickApplyModalVisible}
+            onClose={() => setQuickApplyModalVisible(false)}
+            job={job}
+            currentUser={currentUser}
+            onApplicationSubmitted={checkApplicationStatus}
+          />
+        )}
 
         <View style={{ height: 20 }} />
       </ScrollView>
