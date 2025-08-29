@@ -1,10 +1,10 @@
 import { View, Text, ActivityIndicator, Image, TouchableOpacity, StyleSheet, ScrollView, Dimensions, Animated } from 'react-native';
 import React, { useEffect, useState, useRef } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { getDailyQuote, getCurrentUser } from '../../lib/appwrite';
+import { getDailyQuote, getCurrentUser, getCareerPathById } from '../../lib/appwrite';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Link, router } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import SuccessModal from '@/components/SuccessModal';
 import PathRequiredModal from '@/components/PathRequiredModal';
@@ -18,6 +18,7 @@ const Dashboard = () => {
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [showPathRequiredModal, setShowPathRequiredModal] = useState(false);
   const { user, setUser } = useGlobalContext();
+  const [careerPathName, setCareerPathName] = useState<string | null>(null);
 
   const hasSelectedPath = user?.selectedPath && user.selectedPath.trim() !== '';
 
@@ -28,7 +29,12 @@ const Dashboard = () => {
         const currentUser = await getCurrentUser();
         if (currentUser) {
           setUser(currentUser);
-          if (!currentUser.selectedPath || currentUser.selectedPath.trim() === '') {
+          // Fetch career path name if selectedPath exists
+          if (currentUser.selectedPath && currentUser.selectedPath.trim() !== '') {
+            const careerPath = await getCareerPathById(currentUser.selectedPath);
+            setCareerPathName(careerPath?.name || null);
+          } else {
+            setCareerPathName(null);
             const welcomeModalShown = await AsyncStorage.getItem(`welcomeModalShown_${currentUser.talentId}`);
             if (!welcomeModalShown) {
               setTimeout(() => {
@@ -60,10 +66,13 @@ const Dashboard = () => {
   };
 
   // Handle navigation with animation for primary actions
+  const router = useRouter();
   const handlePrimaryActionPress = (href: string) => {
     // Small delay to allow animation to be visible, then navigate
     setTimeout(() => {
-      router.push(href);
+      router.push({
+        pathname: href
+      });
     }, 100);
   };
 
@@ -179,7 +188,13 @@ const Dashboard = () => {
     }
 
     return (
-      <Link key={item.key} href={item.href} asChild>
+      <Link 
+        key={item.key} 
+        href={{
+          pathname: item.href
+        }} 
+        asChild
+      >
         <TouchableOpacity style={styles.secondaryActionCard} activeOpacity={0.9}>
           <View style={styles.secondaryActionContent}>
             <View style={styles.secondaryActionIcon}><Ionicons name={item.icon as any} size={28} color="#6c5ce7" /></View>
@@ -206,19 +221,17 @@ const Dashboard = () => {
                   <View style={styles.statusDot} />
                 </View>
                 <View style={styles.userInfo}>
-                  <Text style={styles.welcomeText}>Welcome back!</Text>
+                  <Text style={styles.welcomeText}>Hello 👋</Text>
                   <Text style={styles.userName}>{user.fullname || 'Career Explorer'}</Text>
                   <Text style={styles.userRole}>{user.careerStage || 'Ready to grow'}</Text>
-                </View>
-              </View>
-              {!hasSelectedPath && (
-                <View style={styles.pathStatusContainer}>
-                  <View style={styles.pathStatusBadge}>
-                    <Ionicons name="alert-circle-outline" size={18} color="#fff" />
-                    <Text style={styles.pathStatusText}>No Path Selected</Text>
+                  <View style={styles.pathNameContainer}>
+                    <Text style={styles.pathNameText}>
+                      {careerPathName ? careerPathName:'No Path Selected'}
+                    </Text>
                   </View>
                 </View>
-              )}
+              </View>
+              
               <View style={styles.floatingElements}>
                 <View style={[styles.floatingCircle, styles.circle1]} />
                 <View style={[styles.floatingCircle, styles.circle2]} />
@@ -285,9 +298,9 @@ const styles = StyleSheet.create({
   welcomeText: { fontSize: 16, color: 'rgba(255,255,255,0.8)', fontWeight: '500' },
   userName: { fontSize: 26, fontWeight: '700', color: '#fff', marginTop: 4 },
   userRole: { fontSize: 15, color: 'rgba(255,255,255,0.9)', marginTop: 4, fontStyle: 'italic' },
-  pathStatusContainer: { position: 'absolute', top: 12, right: 12, zIndex: 15 },
-  pathStatusBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255, 99, 71, 0.8)', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4 },
-  pathStatusText: { fontSize: 13, fontWeight: '600', color: '#fff', marginLeft: 6 },
+  pathNameContainer: { marginTop: 8, flexDirection: 'row', alignItems: 'center', gap: 6 },
+  pathNameLabel: { fontSize: 13, color: 'rgba(255,255,255,0.8)', fontWeight: '600' },
+  pathNameText: { fontSize: 13, color: '#fff', fontWeight: '700', fontStyle: 'italic' },
   floatingElements: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 },
   floatingCircle: { position: 'absolute', borderRadius: 100, backgroundColor: 'rgba(255,255,255,0.1)' },
   circle1: { width: 100, height: 100, top: -30, right: -30, transform: [{ rotate: '30deg' }] },
