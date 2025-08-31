@@ -29,11 +29,11 @@ const CareerDiscovery: React.FC = () => {
         <View className="space-y-4">
           {/* Card 1: Select Your Own Career Path */}
           <CareerPathCard
-            icon={<Ionicons name="compass-outline" size={24} color="#333" />}
-            title="Select Your Own Career Path"
-            description="Browse through different industries and career paths to find what interests you most"
-            buttonText="Browse Career Paths"
-            onButtonPress={() => router.push('/CareerBrowse')}
+            icon={<Ionicons name="list-outline" size={24} color="#333" />}
+            title="Take the Career Survey"
+            description="Answer a few questions to get personalized career recommendations"
+            buttonText="Start Survey"
+            onButtonPress={() => router.push('/CareerSurvey')}
           />
           
           {/* Divider with "or" */}
@@ -45,11 +45,11 @@ const CareerDiscovery: React.FC = () => {
           
           {/* Card 2: Take the Career Survey */}
           <CareerPathCard
-            icon={<Ionicons name="list-outline" size={24} color="#333" />}
-            title="Take the Career Survey"
-            description="Answer a few questions to get personalized career recommendations"
-            buttonText="Start Survey"
-            onButtonPress={() => router.push('/CareerSurvey')}
+            icon={<Ionicons name="compass-outline" size={24} color="#333" />}
+            title="Select Your Own Career Path"
+            description="Browse through different industries and career paths to find what interests you most"
+            buttonText="Browse Career Paths"
+            onButtonPress={() => router.push('/CareerBrowse')}
           />
         </View>
       </View>
