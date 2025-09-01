@@ -248,7 +248,7 @@ const Profile = () => {
           onPress: async () => {
             try {
               await logOut()
-              router.replace('/')
+              router.replace('/(auth)/signin')
             } catch (error) {
               console.error('Error signing out:', error)
               Alert.alert('Error', 'Failed to sign out. Please try again.')

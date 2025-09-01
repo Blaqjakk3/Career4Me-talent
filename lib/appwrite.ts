@@ -132,12 +132,15 @@ export async function signIn(email: string, password: string) {
 
 export const deleteCurrentSession = async () => {
   try {
-    await account.deleteSession('current');
-    console.log('Current session deleted.');
-  } catch (error: any) { // Type as any since we're checking error.message
-    if (!error.message?.includes('User (role: guests) missing scope (account)')) {
-      console.error(error);
+    // Check if there's an active session first
+    const currentUser = await account.get();
+    if (currentUser) {
+      await account.deleteSession('current');
+      console.log('Current session deleted.');
     }
+  } catch (error) {
+    // Silently ignore the error for guests
+    // This is expected behavior when no session exists
   }
 };
 

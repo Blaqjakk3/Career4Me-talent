@@ -32,7 +32,7 @@ const Dashboard = () => {
           // Fetch career path name if selectedPath exists
           if (currentUser.selectedPath && currentUser.selectedPath.trim() !== '') {
             const careerPath = await getCareerPathById(currentUser.selectedPath);
-            setCareerPathName(careerPath?.name || null);
+            setCareerPathName(careerPath?.title || null);
           } else {
             setCareerPathName(null);
             const welcomeModalShown = await AsyncStorage.getItem(`welcomeModalShown_${currentUser.talentId}`);

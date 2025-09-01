@@ -25,14 +25,15 @@ const SignIn = () => {
   useFocusEffect(
     React.useCallback(() => {
       const handleFocus = async () => {
-        await deleteCurrentSession();
+        try {
+          await deleteCurrentSession();
+        } catch (error) {
+          // Silently handle any errors during session deletion
+          // This is expected for new/guest users
+        }
       };
-  
+
       handleFocus();
-  
-      return () => {
-        // Any cleanup logic goes here if needed
-      };
     }, [])
   );
   
