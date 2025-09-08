@@ -6,11 +6,21 @@ import Header from '@/components/Header';
 import { router } from 'expo-router';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 
+/**
+ * PendingApplications Screen
+ * This component displays a list of all job applications submitted by the user.
+ * It shows the status of each application (e.g., pending, shortlisted, rejected)
+ * and allows the user to withdraw pending applications.
+ */
 const PendingApplications = () => {
+    // State to store the list of applications.
     const [applications, setApplications] = useState<any[]>([]);
+    // State to manage loading status while fetching data.
     const [loading, setLoading] = useState(true);
+    // State to store the current user's profile data.
     const [user, setUser] = useState<any>(null);
 
+    // useEffect hook to fetch the user's data and then their applications when the component mounts.
     useEffect(() => {
         const fetchUserAndApplications = async () => {
             const currentUser = await getCurrentUser();
@@ -22,12 +32,14 @@ const PendingApplications = () => {
         fetchUserAndApplications();
     }, []);
 
+    // Fetches all applications for a given talent ID from the Appwrite database.
     const fetchApplications = async (talentId: string) => {
         try {
             setLoading(true);
             const response = await getTalentApplications(talentId);
 
             // Fetch job details for each application
+            // For each application, fetch the corresponding job details to display the job name.
             const applicationsWithJobs = await Promise.all(
                 response.map(async (application: any) => {
                     try {
@@ -56,6 +68,7 @@ const PendingApplications = () => {
         }
     };
 
+    // Handles the action of withdrawing an application.
     const handleWithdraw = async (applicationId: string) => {
         try {
             await updateApplicationStatus(applicationId, 'withdrawn');
@@ -68,6 +81,7 @@ const PendingApplications = () => {
         }
     };
 
+    // Helper function to determine the color based on the application status.
     const getStatusColor = (status: string) => {
         switch (status.toLowerCase()) {
             case 'pending': return '#f59e0b';
@@ -78,6 +92,7 @@ const PendingApplications = () => {
         }
     };
 
+    // Helper function to determine the icon based on the application status.
     const getStatusIcon = (status: string) => {
         switch (status.toLowerCase()) {
             case 'pending': return 'clock';
@@ -88,6 +103,10 @@ const PendingApplications = () => {
         }
     };
 
+    /**
+     * Renders a single application item in the FlatList.
+     * Each item is a card showing job name, status, and action buttons.
+     */
     const renderItem = ({ item }: { item: any }) => (
         <View style={{
             backgroundColor: 'white',
@@ -104,6 +123,7 @@ const PendingApplications = () => {
             borderLeftColor: '#5badec',
         }}>
             {/* Header with job title */}
+            {/* Card Header: Job title and application status */}
             <View style={{ marginBottom: 12 }}>
                 <Text style={{
                     fontSize: 18,
@@ -132,6 +152,7 @@ const PendingApplications = () => {
             </View>
 
             {/* Application details */}
+            {/* Application Details: Date applied and viewed status */}
             <View style={{
                 backgroundColor: '#f8fafc',
                 borderRadius: 12,
@@ -166,6 +187,7 @@ const PendingApplications = () => {
             </View>
 
             {/* Action buttons */}
+            {/* Action Buttons: "View Job" and "Withdraw" */}
             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <TouchableOpacity
                     style={{
@@ -196,6 +218,7 @@ const PendingApplications = () => {
                     </Text>
                 </TouchableOpacity>
 
+                {/* The "Withdraw" button is only shown for applications with 'pending' status. */}
                 {item.status === 'pending' && (
                     <TouchableOpacity
                         style={{
@@ -230,8 +253,10 @@ const PendingApplications = () => {
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: '#f8fafc' }}>
+            {/* Page Header */}
             <Header title="My Applications" onBackPress={() => router.back()} />
 
+            {/* Conditional rendering: show a loading indicator or the list of applications. */}
             {loading ? (
                 <View style={{
                     flex: 1,
@@ -259,6 +284,7 @@ const PendingApplications = () => {
                         paddingBottom: 32
                     }}
                     showsVerticalScrollIndicator={false}
+                    // Component to display when the list of applications is empty.
                     ListEmptyComponent={
                         <View style={{
                             flex: 1,

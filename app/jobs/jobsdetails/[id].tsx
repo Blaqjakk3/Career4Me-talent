@@ -33,6 +33,7 @@ import JobCompatibilityAnalyzer from '@/components/JobCompatibilityAnalyzer';
 import QuickApplyModal from '@/components/QuickApplyModal';
 
 // Define types
+// Type definition for the Job object, including all detailed fields.
 type Job = {
   $id: string;
   name: string;
@@ -55,6 +56,7 @@ type Job = {
   allowCareer4MeApplications?: boolean;
 };
 
+// Type definition for the Employer object.
 type Employer = {
   employerId: string;
   name: string;
@@ -65,19 +67,37 @@ type Employer = {
   avatar?: string;
 };
 
+/**
+ * JobDetails Screen
+ * This component displays all the details for a specific job posting.
+ * It fetches job and employer data, allows users to save or apply for the job,
+ * and shows a compatibility analysis with the user's profile.
+ */
 const JobDetails = () => {
+  // Get the dynamic route parameter 'id' (job ID) from the URL.
   const { id } = useLocalSearchParams();
+  // State to manage loading status.
   const [loading, setLoading] = useState<boolean>(true);
+  // State to store the fetched job details.
   const [job, setJob] = useState<Job | null>(null);
+  // State to store the details of the employer who posted the job.
   const [employer, setEmployer] = useState<Employer | null>(null);
+  // State to store the ID of the currently logged-in user.
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  // State to track if the current user has saved this job.
   const [isSaved, setIsSaved] = useState<boolean>(false);
+  // State to manage the loading indicator for the save button.
   const [savingJob, setSavingJob] = useState<boolean>(false);
+  // State to store the full profile of the current user.
   const [currentUser, setCurrentUser] = useState<any>(null);
+  // State to control the visibility of the "Quick Apply" modal.
   const [isQuickApplyModalVisible, setQuickApplyModalVisible] = useState(false);
+  // State to track if the user has already applied for this job.
   const [hasApplied, setHasApplied] = useState<boolean>(false);
+  // State to store the status of the user's application (e.g., 'pending', 'shortlisted').
   const [applicationStatus, setApplicationStatus] = useState<string | null>(null);
 
+  // Fetch job details and the current user's account info when the component mounts or 'id' changes.
   useEffect(() => {
     if (id) {
       fetchJobDetails(id as string);
@@ -85,12 +105,14 @@ const JobDetails = () => {
     }
   }, [id]);
 
+  // Check if the job is saved by the user once job and user data are available.
   useEffect(() => {
     if (job && currentUserId) {
       checkIfJobSaved();
     }
   }, [job, currentUserId]);
 
+  // Fetch the detailed profile of the current user.
   useEffect(() => {
     const fetchCurrentUser = async () => {
       if (currentUserId) {
@@ -101,12 +123,14 @@ const JobDetails = () => {
     fetchCurrentUser();
   }, [currentUserId]);
 
+  // Check the user's application status for this job once job and user profile are loaded.
   useEffect(() => {
     if (job && currentUser) {
       checkApplicationStatus();
     }
   }, [job, currentUser]);
 
+  // Checks with the backend if an application already exists for this job and user.
   const checkApplicationStatus = async () => {
     if (!job || !currentUser) {
       return;
@@ -122,6 +146,7 @@ const JobDetails = () => {
     }
   };
 
+  // Retrieves the current authenticated user's ID from Appwrite.
   const getCurrentAccount = async () => {
     try {
       const user = await account.get();
@@ -132,6 +157,7 @@ const JobDetails = () => {
     }
   };
 
+  // Checks if the job is in the user's list of saved jobs.
   const checkIfJobSaved = async () => {
     if (!job) return;
     
@@ -143,6 +169,7 @@ const JobDetails = () => {
     }
   };
 
+  // Fetches the main job details and the associated employer's details from Appwrite.
   const fetchJobDetails = async (jobId: string) => {
     try {
       setLoading(true);
@@ -177,6 +204,7 @@ const JobDetails = () => {
     }
   };
 
+  // Handles the action of saving or unsaving a job.
   const handleSaveJob = async () => {
     if (!job) return;
     
@@ -186,6 +214,7 @@ const JobDetails = () => {
     }
 
     try {
+      // Toggles the save status and updates the UI accordingly.
       setSavingJob(true);
       const result = await saveJob(job.$id);
       
@@ -205,6 +234,7 @@ const JobDetails = () => {
     }
   };
 
+  // Handles the "Apply" action.
   const handleApply = async () => {
     try {
       if (!job?.applylink) {
@@ -218,6 +248,7 @@ const JobDetails = () => {
       }
 
       // Check if current user has already clicked apply
+      // Track the click to provide analytics for the employer.
       const hasAlreadyClicked = job.clickers?.includes(currentUserId) || false;
 
       if (!hasAlreadyClicked) {
@@ -243,6 +274,7 @@ const JobDetails = () => {
       }
 
       // Open link regardless of whether it's a new click or not
+      // Open the application link in the device's browser.
       const canOpen = await Linking.canOpenURL(job.applylink);
       if (canOpen) {
         await Linking.openURL(job.applylink);
@@ -254,6 +286,7 @@ const JobDetails = () => {
     }
   };
 
+  // Navigates to the employer's profile page.
   const handleEmployerPress = () => {
     if (job?.employer) {
       router.push(`/jobs/employer/${job.employer}`);
@@ -262,6 +295,10 @@ const JobDetails = () => {
 
   
 
+  /**
+   * InfoPill Component
+   * A styled pill to display job attributes like type, environment, and seniority.
+   */
   const InfoPill = ({ icon, text, variant = 'primary' }: { 
     icon: React.ReactNode; 
     text: string;
@@ -307,6 +344,10 @@ const JobDetails = () => {
     );
   };
 
+  /**
+   * SectionCard Component
+   * A reusable card component to structure different sections of the job details page.
+   */
   const SectionCard = ({ title, children }: { title: string; children: React.ReactNode }) => (
     <View style={{
       backgroundColor: 'white',
@@ -332,6 +373,10 @@ const JobDetails = () => {
     </View>
   );
 
+  /**
+   * ListItem Component
+   * A styled list item with a checkmark icon, used for responsibilities, skills, etc.
+   */
   const ListItem = ({ text }: { text: string }) => (
     <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 12 }}>
       <View style={{
@@ -353,6 +398,10 @@ const JobDetails = () => {
     </View>
   );
 
+  /**
+   * ActionButton Component
+   * A reusable button for primary actions like "Apply" and "Save".
+   */
   const ActionButton = ({ onPress, icon, label, variant = 'outline', disabled = false }: {
     onPress: () => void;
     icon: React.ReactNode;
@@ -388,6 +437,7 @@ const JobDetails = () => {
     </TouchableOpacity>
   );
 
+  // Display a loading indicator while job details are being fetched.
   if (loading) {
     return (
       <SafeAreaView style={{
@@ -418,6 +468,7 @@ const JobDetails = () => {
     );
   }
 
+  // Display a "Not Found" message if the job could not be fetched.
   if (!job) {
     return (
       <SafeAreaView style={{
@@ -474,6 +525,7 @@ const JobDetails = () => {
       </SafeAreaView>
     );
   }
+  // Function to handle the back button press in the header.
   const handleBackPress = () => {
     router.back();
   };
@@ -481,9 +533,11 @@ const JobDetails = () => {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f9fafb' }}>
       {/* Header */}
+      {/* Page Header */}
       <Header title="Job Details" onBackPress={handleBackPress} />
 
       <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+        {/* Job Header Section: Displays employer avatar, job title, company name, and location. */}
         {/* Enhanced Job Header */}
         <View style={{
           paddingVertical: 32,
@@ -568,6 +622,12 @@ const JobDetails = () => {
           </View>
 
           {/* Quick Actions */}
+          {/* Quick Actions Section: Contains buttons for applying and saving the job. */}
+          {/* The logic here is complex to handle different application scenarios: */}
+          {/* 1. User has already applied via "Quick Apply". */}
+          {/* 2. Job allows both external link and "Quick Apply". */}
+          {/* 3. Job only allows external link application. */}
+          {/* 4. Job only allows "Quick Apply". */}
           <View style={{ marginHorizontal: 16, marginBottom: 20 }}>
             {job.allowCareer4MeApplications && hasApplied ? (
               <View style={{
@@ -650,6 +710,7 @@ const JobDetails = () => {
         </View>
 
         {/* Job Info Highlights */}
+        {/* Job Info Pills: A row of pills highlighting key job attributes. */}
         <View style={{
           flexDirection: 'row',
           flexWrap: 'wrap',
@@ -681,6 +742,7 @@ const JobDetails = () => {
         </View>
 
         {/* Description */}
+        {/* Job Description Section */}
         <SectionCard title="Job Description">
           <Text style={{ 
             fontSize: 16, 
@@ -691,6 +753,7 @@ const JobDetails = () => {
         </SectionCard>
 
         {/* Responsibilities */}
+        {/* Key Responsibilities Section */}
         {job.responsibilities && job.responsibilities.length > 0 && (
           <SectionCard title="Key Responsibilities">
             {job.responsibilities.map((responsibility, index) => (
@@ -700,6 +763,7 @@ const JobDetails = () => {
         )}
 
         {/* Skills */}
+        {/* Required Skills Section */}
         {job.skills && job.skills.length > 0 && (
           <SectionCard title="Required Skills">
             <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
@@ -725,6 +789,7 @@ const JobDetails = () => {
         )}
 
         {/* Education */}
+        {/* Education Requirements Section */}
         {job.requiredDegrees && job.requiredDegrees.length > 0 && (
           <SectionCard title="Education Requirements">
             {job.requiredDegrees.map((degree, index) => (
@@ -734,6 +799,7 @@ const JobDetails = () => {
         )}
 
         {/* Certifications */}
+        {/* Recommended Certifications Section */}
         {job.suggestedCertifications && job.suggestedCertifications.length > 0 && (
           <SectionCard title="Recommended Certifications">
             {job.suggestedCertifications.map((cert, index) => (
@@ -743,6 +809,7 @@ const JobDetails = () => {
         )}
 
         {/* Job Compatibility Analyzer */}
+        {/* Job Compatibility Analyzer: A component that analyzes how well the user's profile matches the job requirements. */}
         {currentUserId && job && currentUser && (
           <JobCompatibilityAnalyzer 
             job={job} 
@@ -752,6 +819,7 @@ const JobDetails = () => {
 
 
 
+        {/* Modal for "Quick Apply" functionality, only rendered if the job allows it. */}
         {/* Quick Apply Modal */}
         {job.allowCareer4MeApplications && (
           <QuickApplyModal
@@ -763,6 +831,7 @@ const JobDetails = () => {
           />
         )}
 
+        {/* Spacer at the bottom of the scroll view. */}
         <View style={{ height: 20 }} />
       </ScrollView>
     </SafeAreaView>

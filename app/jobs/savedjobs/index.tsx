@@ -25,6 +25,7 @@ import {
 import Header from '@/components/Header'
 
 // Define types
+// Type definition for the Job object.
 type Job = {
   $id: string
   name: string
@@ -44,27 +45,40 @@ type Job = {
   dateofUpload?: string
 }
 
+// Type definition for the Employer object, containing only the fields needed for this screen.
 type Employer = {
   employerId: string
   name: string
   avatar?: string
 }
 
+/**
+ * SavedJobs Screen
+ * This component displays a list of all jobs that the user has saved.
+ * It allows users to view the details of a saved job or remove it from their saved list.
+ */
 const SavedJobs = () => {
+  // State to manage loading status while fetching data.
   const [loading, setLoading] = useState<boolean>(true)
+  // State to store the array of saved job objects.
   const [savedJobs, setSavedJobs] = useState<Job[]>([])
+  // State to store employer data as a key-value map for efficient lookups.
   const [employers, setEmployers] = useState<Record<string, Employer>>({})
+  // State to track the ID of the job currently being removed, to show a specific loading state.
   const [removingJobId, setRemovingJobId] = useState<string | null>(null)
 
+  // useEffect hook to fetch the saved jobs when the component mounts.
   useEffect(() => {
     fetchSavedJobs()
   }, [])
 
+  // Fetches the list of saved jobs for the current user from the Appwrite backend.
   const fetchSavedJobs = async () => {
     try {
       setLoading(true)
       const jobs = await getSavedJobs()
       // Map Document[] to Job[]
+      // Map the raw Appwrite Document[] to our strongly-typed Job[] array.
       const mappedJobs: Job[] = jobs.map((doc: any) => ({
         $id: doc.$id,
         name: doc.name,
@@ -85,6 +99,7 @@ const SavedJobs = () => {
       }))
       setSavedJobs(mappedJobs)
       
+      // If jobs were found, fetch the associated employer data.
       if (mappedJobs.length > 0) {
         await fetchEmployersData(mappedJobs)
       }
@@ -96,13 +111,16 @@ const SavedJobs = () => {
     }
   }
 
+  // Fetches data for all employers associated with the saved jobs in a single batch request.
   const fetchEmployersData = async (jobs: Job[]) => {
     try {
+      // Create a unique set of employer IDs to avoid duplicate fetches.
       const employerIds = [...new Set(jobs.map(job => job.employer))]
       
       const employersResponse = await databases.listDocuments(
         config.databaseId,
         config.employersCollectionId,
+        // Use a 'Query.equal' with an array of IDs to get multiple documents at once.
         [Query.equal('employerId', employerIds)]
       )
 
@@ -121,17 +139,22 @@ const SavedJobs = () => {
     }
   }
 
+  // Navigates back to the previous screen.
   const handleBackPress = () => {
     router.back();
   };
 
+  // Handles the action of unsaving a job.
   const handleUnsaveJob = async (jobId: string) => {
     try {
       setRemovingJobId(jobId)
       const result = await saveJob(jobId) // This will toggle/remove the job from saved
+      // The `saveJob` function in appwrite.js toggles the saved state.
+      const result = await saveJob(jobId)
       
       if (result.success) {
         // Refresh the saved jobs list
+        // If successful, refresh the entire list to reflect the change.
         await fetchSavedJobs()
       } else {
         Alert.alert('Error', 'Failed to remove job from saved list')
@@ -144,12 +167,18 @@ const SavedJobs = () => {
     }
   }
 
+  // Navigates to the job details page for the selected job.
   const navigateToJobDetails = (jobId: string) => {
     router.push(`/jobs/jobsdetails/${jobId}`)
   }
 
+  /**
+   * Renders a single saved job item in the FlatList.
+   * Each item is a card showing job and employer info, with an "unsave" button.
+   */
   const renderJobItem = ({ item }: { item: Job }) => {
     const employer = employers[item.employer] || {}
+    const employer = employers[item.employer] || {} // Safely access employer data.
     const isRemoving = removingJobId === item.$id
 
     return (
@@ -169,6 +198,7 @@ const SavedJobs = () => {
         onPress={() => navigateToJobDetails(item.$id)}
         disabled={isRemoving}
       >
+        {/* Job Header: Employer avatar, job title, and employer name */}
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
           <Image
             source={{ uri: employer.avatar || 'https://via.placeholder.com/40' }}
@@ -184,6 +214,7 @@ const SavedJobs = () => {
           </View>
           
           {/* Unsave Button */}
+          {/* Unsave Button with a loading indicator */}
           <TouchableOpacity
             style={{
               padding: 8,
@@ -201,6 +232,7 @@ const SavedJobs = () => {
           </TouchableOpacity>
         </View>
 
+        {/* Job Location */}
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
           <Feather name="map-pin" size={16} color="#6b7280" />
           <Text style={{ marginLeft: 6, fontSize: 14, color: '#6b7280' }}>
@@ -208,6 +240,7 @@ const SavedJobs = () => {
           </Text>
         </View>
 
+        {/* Job Info Pills */}
         <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
           <InfoPill icon={<Feather name="clock" size={14} color="#6b7280" />} text={item.jobtype} />
           <InfoPill icon={<Feather name="briefcase" size={14} color="#6b7280" />} text={item.workenvironment} />
@@ -215,6 +248,7 @@ const SavedJobs = () => {
         </View>
 
         {/* Date saved (if available) */}
+        {/* Date Posted */}
         {item.dateofUpload && (
           <Text style={{ fontSize: 12, color: '#9ca3af', marginTop: 8 }}>
             Posted: {new Date(item.dateofUpload).toLocaleDateString()}
@@ -224,6 +258,10 @@ const SavedJobs = () => {
     )
   }
 
+  /**
+   * InfoPill Component
+   * A small, styled pill to display job attributes.
+   */
   const InfoPill = ({ icon, text }: { icon: React.ReactNode; text: string }) => (
     <View style={{
       flexDirection: 'row',
@@ -242,9 +280,11 @@ const SavedJobs = () => {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f9fafb' }}>
+     {/* Page Header */}
      <Header title="Saved Jobs" onBackPress={handleBackPress} />
       <View style={{ padding: 16, backgroundColor: '#f9fafb' }}>
         {/* Job count */}
+        {/* Display the total count of saved jobs. */}
         <Text style={{ fontSize: 14, color: '#6b7280', textAlign: 'center' }}>
           {savedJobs.length} saved job{savedJobs.length !== 1 ? 's' : ''}
         </Text>
@@ -252,12 +292,14 @@ const SavedJobs = () => {
 
       {/* Content */}
       {loading ? (
+        // Loading state indicator.
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <ActivityIndicator size="large" color="#4f46e5" />
           <Text style={{ marginTop: 12, fontSize: 16, color: '#6b7280' }}>
             Loading saved jobs...
           </Text>
         </View>
+        // Empty state component shown when there are no saved jobs.
       ) : savedJobs.length === 0 ? (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
           <Ionicons name="bookmark-outline" size={64} color="#d1d5db" />
@@ -283,12 +325,14 @@ const SavedJobs = () => {
           </TouchableOpacity>
         </View>
       ) : (
+        // FlatList to render the list of saved jobs.
         <FlatList
           data={savedJobs}
           renderItem={renderJobItem}
           keyExtractor={(item) => item.$id}
           contentContainerStyle={{ padding: 16 }}
           showsVerticalScrollIndicator={false}
+          // Enable pull-to-refresh functionality.
           refreshing={loading}
           onRefresh={fetchSavedJobs}
         />

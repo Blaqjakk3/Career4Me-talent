@@ -20,6 +20,7 @@ import {
 } from '../../../lib/appwrite';
 
 // Define types
+// Type definition for the Employer object, representing the structure of employer data from Appwrite.
 type Employer = {
   $id: string;
   employerId: string;
@@ -32,6 +33,7 @@ type Employer = {
   email?: string;
 };
 
+// Type definition for the Job object, representing the structure of job data from Appwrite.
 type Job = {
   $id: string;
   name: string;
@@ -41,18 +43,30 @@ type Job = {
   employer: string;
 };
 
+/**
+ * EmployerDetails Screen
+ * This component displays a detailed profile for a specific employer.
+ * It fetches the employer's information and a list of their open job positions.
+ * The employer ID is retrieved from the URL parameters.
+ */
 const EmployerDetails = () => {
+  // Get the dynamic route parameter 'id' from the URL.
   const { id } = useLocalSearchParams();
+  // State to manage loading status while fetching data.
   const [loading, setLoading] = useState<boolean>(true);
+  // State to store the fetched employer details.
   const [employer, setEmployer] = useState<Employer | null>(null);
+  // State to store the list of jobs associated with the employer.
   const [jobs, setJobs] = useState<Job[]>([]);
 
+  // useEffect hook to fetch employer details when the component mounts or the 'id' parameter changes.
   useEffect(() => {
     if (id) {
       fetchEmployerDetails(id as string);
     }
   }, [id]);
 
+  // Fetches employer details and their jobs from the Appwrite database.
   const fetchEmployerDetails = async (employerId: string) => {
     try {
       setLoading(true);
@@ -64,6 +78,7 @@ const EmployerDetails = () => {
         [Query.equal('employerId', [employerId])]
       );
 
+      // If an employer is found, update the state and fetch their jobs.
       if (employersResponse.documents.length > 0) {
         const employerData = employersResponse.documents[0];
         setEmployer(employerData);
@@ -78,6 +93,7 @@ const EmployerDetails = () => {
         setJobs(jobsResponse.documents);
       }
 
+      // Set loading to false after all data is fetched.
       setLoading(false);
     } catch (error) {
       console.error('Error fetching employer details:', error);
@@ -85,6 +101,7 @@ const EmployerDetails = () => {
     }
   };
 
+  // Handles opening the employer's website in the device's browser.
   const handleWebsitePress = async () => {
     if (!employer?.website) return;
     
@@ -100,14 +117,20 @@ const EmployerDetails = () => {
     }
   };
 
+  // Navigates to the details page for a specific job.
   const handleJobPress = (jobId: string) => {
     router.push(`/jobs/jobsdetails/${jobId}`);
   };
 
+  // Navigates back to the previous screen.
   const handleBackPress = () => {
     router.back();
   };
 
+  /**
+   * InfoCard Component
+   * A reusable card to display key information with an icon, title, and value.
+   */
   const InfoCard = ({ 
     icon, 
     title, 
@@ -173,6 +196,10 @@ const EmployerDetails = () => {
     </TouchableOpacity>
   );
 
+  /**
+   * JobCard Component
+   * A reusable card to display a summary of a job posting.
+   */
   const JobCard = ({ job, index }: { job: Job; index: number }) => (
     <TouchableOpacity
       style={{
@@ -248,6 +275,10 @@ const EmployerDetails = () => {
     </TouchableOpacity>
   );
 
+  /**
+   * StatCard Component
+   * A small card to display a statistic, like the number of open positions.
+   */
   const StatCard = ({ icon, value, label }: { icon: React.ReactNode; value: string; label: string }) => (
     <View style={{
       backgroundColor: 'white',
@@ -287,6 +318,7 @@ const EmployerDetails = () => {
     </View>
   );
 
+  // Display a loading indicator while data is being fetched.
   if (loading) {
     return (
       <SafeAreaView style={{
@@ -317,6 +349,7 @@ const EmployerDetails = () => {
     );
   }
 
+  // Display a "Not Found" message if the employer could not be fetched.
   if (!employer) {
     return (
       <SafeAreaView style={{
@@ -379,6 +412,7 @@ const EmployerDetails = () => {
       <Header title="Company Profile" onBackPress={handleBackPress} />
 
       <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+        {/* Company Header Section: Displays avatar, name, field, and stats. */}
         {/* Enhanced Company Header */}
         <View style={{
           alignItems: 'center',
@@ -451,6 +485,7 @@ const EmployerDetails = () => {
           </View>
         </View>
 
+        {/* Company Details Section: Displays website and contact information. */}
         {/* Company Information */}
         <View style={{ paddingHorizontal: 20 }}>
           <Text style={{
@@ -479,6 +514,7 @@ const EmployerDetails = () => {
           )}
         </View>
 
+        {/* About Section: Displays the company's description. */}
         {/* About Section */}
         {employer.about && (
           <View style={{ paddingHorizontal: 20, marginTop: 32 }}>
@@ -510,6 +546,7 @@ const EmployerDetails = () => {
           </View>
         )}
 
+        {/* Open Positions Section: Lists all available jobs from the employer. */}
         {/* Open Positions */}
         {jobs.length > 0 && (
           <View style={{ paddingHorizontal: 20, marginTop: 32 }}>
@@ -538,6 +575,7 @@ const EmployerDetails = () => {
           </View>
         )}
 
+        {/* Spacer at the bottom of the scroll view. */}
         <View style={{ height: 40 }} />
       </ScrollView>
     </SafeAreaView>
