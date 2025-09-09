@@ -88,9 +88,18 @@ export const createUser = async (fullname: string, email: string, password: stri
     await signIn(email, password);
 
     return newTalent;
-  } catch (error) {
+  } catch (error: unknown) {
     console.log(error);
-    throw new Error(typeof error === "string" ? error : "An unknown error occurred");
+    // Preserve meaningful error details from Appwrite or other sources
+    let message = "An unknown error occurred";
+    if (typeof error === "string") {
+      message = error;
+    } else if (error instanceof Error && error.message) {
+      message = error.message;
+    } else if ((error as any)?.message) {
+      message = (error as any).message;
+    }
+    throw new Error(message);
   }
 };
 

@@ -29,10 +29,40 @@ const SignUp = () => {
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const {isLoading, isLoggedIn} = useGlobalContext();
 
+  const isValidFullName = (name: string) => /^[a-zA-Z\s]+$/.test(name.trim());
+
+  const isValidDateOfBirth = (date: Date) => {
+    const now = new Date();
+    if (date > now) return false; // Future date
+
+    const age = now.getFullYear() - date.getFullYear();
+    const monthDiff = now.getMonth() - date.getMonth();
+    const dayDiff = now.getDate() - date.getDate();
+
+    let actualAge = age;
+    if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+      actualAge--;
+    }
+
+    if (actualAge < 15 || actualAge > 80) return false;
+    return true;
+  };
+
   const submit = async () => {
     if(!form.fullname || !form.email || !form.careerStage || !form.dateofBirth || !form.password) {
       Alert.alert("Please fill in all fields")
       return
+    }
+    if (!isValidFullName(form.fullname)) {
+      Alert.alert("Invalid Name", "Full Name should contain only letters and spaces.");
+      return;
+    }
+    if (!isValidDateOfBirth(form.dateofBirth)) {
+      Alert.alert(
+        "Invalid Date of Birth",
+        "Please enter a valid date of birth. You must be between 15 and 80 years old, and the date cannot be in the future."
+      );
+      return;
     }
     setIsSubmitting(true); 
     try {
@@ -40,8 +70,18 @@ const SignUp = () => {
       
       // Show success modal instead of immediately navigating
       setShowSuccessModal(true);
-    } catch (error) {
-      Alert.alert('Error', error.message)
+    } catch (error: unknown) {
+      // Extract message and show friendly message for email validation errors
+      let message = "An unknown error occurred";
+      if (error instanceof Error && error.message) message = error.message;
+      else if (typeof error === "string") message = error;
+
+      // If Appwrite returned an email validation error, show a clearer alert
+      if (message.toLowerCase().includes("email") || message.toLowerCase().includes("valid email")) {
+        Alert.alert("Invalid Email", "Please check your email and enter a valid email address.");
+      } else {
+        Alert.alert("Error", message);
+      }
     }finally{
       setIsSubmitting(false)
     }
@@ -104,6 +144,16 @@ const SignUp = () => {
             transform: [{ translateY: slideAnim }],
           }}
         >
+          {/* Back Button */}
+                  <TouchableOpacity
+                     onPress={() => router.replace("/signin")}
+                    className="mt-4"
+                  >
+                   <View className="flex-row items-center">
+                  <Ionicons name="arrow-back" size={24} color="#5badec" />
+                  <Text className="ml-2 text-[#5badec] text-lg font-semibold">Back</Text>
+                   </View>
+                  </TouchableOpacity>
           {/* Sign Up Header */}
           <View className="mt-8 mb-10">
             <Text className="text-3xl font-bold text-gray-800">
@@ -119,9 +169,13 @@ const SignUp = () => {
                 title="Full Name"
                 value={form.fullname}
                 placeholder="Enter your full name"
-                handleChangeText={(text) => setForm({ ...form, fullname: text })}
+                handleChangeText={(text) => {
+                  // Only allow letters and spaces
+                  const filtered = text.replace(/[^a-zA-Z\s]/g, "");
+                  setForm({ ...form, fullname: filtered });
+                }}
                 keyboardType="default"
-                autoCapitalize="none"
+                autoCapitalize="words"
               />
               <FormField
                 title="Email"
@@ -154,7 +208,21 @@ const SignUp = () => {
               >
                 <View className="flex-1 justify-center items-center bg-black/50">
                   <View className="w-80 bg-white rounded-lg p-4 max-h-[80%]">
-                    <ScrollView>
+                    {/* X Close Button */}
+                    <TouchableOpacity
+                      onPress={() => setDropdownVisible(false)}
+                      style={{
+                        position: "absolute",
+                        top: 10,
+                        right: 10,
+                        zIndex: 10,
+                        padding: 4,
+                      }}
+                      accessibilityLabel="Close"
+                    >
+                      <Ionicons name="close" size={24} color="#5badec" />
+                    </TouchableOpacity>
+                    <ScrollView style={{ marginTop: 28 }}>
                       {careerStages.map((stage) => (
                         <TouchableOpacity
                           key={stage.value}

@@ -112,7 +112,7 @@ const SignIn = () => {
   
         router.replace("/dashboard")
       } catch (error) {
-        Alert.alert('Error', error.message)
+        Alert.alert('Error', (error as Error).message)
       }finally{
         setIsSubmitting(false)
       }
@@ -200,6 +200,3 @@ const SignIn = () => {
 }
 
 export default SignIn
-
-
-
