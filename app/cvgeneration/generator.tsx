@@ -20,6 +20,14 @@ import {
   type CVGenerationRequest 
 } from '@/lib/gemini';
 
+/*
+  File: generator.tsx
+  Purpose: UI for collecting user profile details and generating/downloading a professional CV PDF.
+  Notes: This is a React Native + Expo component. Keep logic (API calls/validation) in lib/* and UI here.
+*/
+
+/* --- Data interfaces --- */
+/* Keep these lightweight and explicit so form state is predictable. */
 interface Education {
   degree: string;
   institution: string;
@@ -59,9 +67,10 @@ interface ContactInfo {
   phone?: string;
 }
 
+/* --- Component --- */
 const CVGenerator: React.FC = () => {
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<any>(null); // Consider replacing `any` with a proper User type
   const [loading, setLoading] = useState(false);
   const [additionalSkills, setAdditionalSkills] = useState<string[]>([]);
   const [newSkill, setNewSkill] = useState('');
@@ -72,10 +81,16 @@ const CVGenerator: React.FC = () => {
   const [contactInfo, setContactInfo] = useState<ContactInfo>({});
   const [generatedCV, setGeneratedCV] = useState<string | null>(null);
 
+  /* Load user once on mount. */
   useEffect(() => {
     loadUserData();
+    // empty dependency array is intentional: load once on mount
   }, []);
 
+  /* Fetch current user from appwrite wrapper.
+     - If call fails we alert the user.
+     - We intentionally do not prepopulate education to avoid duplicates (as comment says).
+  */
   const loadUserData = async () => {
     try {
       const currentUser = await getCurrentUser();
@@ -85,6 +100,7 @@ const CVGenerator: React.FC = () => {
         setEducationDetails([]);
       }
     } catch (error) {
+      // Surface a simple alert. Consider logging to remote telemetry for debugging.
       Alert.alert('Error', 'Failed to load user data');
     }
   };
@@ -93,9 +109,11 @@ const CVGenerator: React.FC = () => {
     router.back();
   };
 
+  /* --- Skills helpers --- */
   const addSkill = () => {
-    if (newSkill.trim() && !additionalSkills.includes(newSkill.trim())) {
-      setAdditionalSkills([...additionalSkills, newSkill.trim()]);
+    const trimmed = newSkill.trim();
+    if (trimmed && !additionalSkills.includes(trimmed)) {
+      setAdditionalSkills([...additionalSkills, trimmed]);
       setNewSkill('');
     }
   };
@@ -104,6 +122,7 @@ const CVGenerator: React.FC = () => {
     setAdditionalSkills(additionalSkills.filter(s => s !== skill));
   };
 
+  /* --- Education helpers --- */
   const addEducation = () => {
     setEducationDetails([...educationDetails, {
       degree: '',
@@ -124,6 +143,7 @@ const CVGenerator: React.FC = () => {
     setEducationDetails(educationDetails.filter((_, i) => i !== index));
   };
 
+  /* --- Work experience helpers --- */
   const addWorkExperience = () => {
     setWorkExperiences([...workExperiences, {
       company: '',
@@ -145,6 +165,7 @@ const CVGenerator: React.FC = () => {
     setWorkExperiences(workExperiences.filter((_, i) => i !== index));
   };
 
+  /* --- Projects helpers --- */
   const addProject = () => {
     setProjects([...projects, {
       title: '',
@@ -183,6 +204,7 @@ const CVGenerator: React.FC = () => {
     setProjects(projects.filter((_, i) => i !== index));
   };
 
+  /* --- Certifications helpers --- */
   const addCertification = () => {
     setCertifications([...certifications, {
       title: '',
@@ -202,10 +224,18 @@ const CVGenerator: React.FC = () => {
     setCertifications(certifications.filter((_, i) => i !== index));
   };
 
+  /* Contact info updater */
   const updateContactInfo = (field: keyof ContactInfo, value: string) => {
     setContactInfo({ ...contactInfo, [field]: value });
   };
 
+  /*
+    Generate CV
+    - Builds a CVGenerationRequest object and validates it via validateCVRequest (lib/gemini).
+    - Calls generateCVWithRetry which presumably handles retries and returns PDF data or error.
+    - Note: validateCVRequest should throw if request is invalid; we catch and show an alert.
+    - Potential edge: user.talentId might be undefined -> validateCVRequest should catch that or UI should prevent generating.
+  */
   const handleGenerateCV = async () => {
     if (!user) {
       Alert.alert('Error', 'User data not loaded');
@@ -223,19 +253,22 @@ const CVGenerator: React.FC = () => {
         contactInfo
       };
 
+      // validateCVRequest should provide helpful errors. Consider showing field-level errors in UI later.
       validateCVRequest(request);
       setLoading(true);
 
       const result = await generateCVWithRetry(request);
       
       if (result.success && result.pdfData) {
+        // pdfData is stored as a string; confirm its format (base64, blob URL, etc.) in lib/gemini.
         setGeneratedCV(result.pdfData);
         Alert.alert('Success', 'CV generated successfully!');
       } else {
+        // result.error may be a message returned by server
         throw new Error(result.error || 'Failed to generate CV');
       }
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('CV generation error:', error);
       Alert.alert('Error', error.message || 'Failed to generate CV');
     } finally {
@@ -243,6 +276,12 @@ const CVGenerator: React.FC = () => {
     }
   };
 
+  /*
+    Download CV
+    - downloadCV should know how to handle generatedCV format (base64 vs URL).
+    - This function creates a filename based on user.fullname; fallback to 'my_cv.pdf'.
+    - On web/Expo, implementation details might differ (FileSystem, Sharing, Permissions).
+  */
   const handleDownloadCV = async () => {
     if (!generatedCV) return;
 
@@ -255,6 +294,7 @@ const CVGenerator: React.FC = () => {
     }
   };
 
+  /* --- Loading state UI while user loads --- */
   if (!user) {
     return (
       <View style={styles.container}>
@@ -267,6 +307,7 @@ const CVGenerator: React.FC = () => {
     );
   }
 
+  /* --- Main form UI --- */
   return (
     <View style={styles.container}>
       <Header title="CV Generator" onBackPress={handleBackPress} />
@@ -662,7 +703,7 @@ const styles = StyleSheet.create({
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 10, // NOTE: 'gap' is not supported on older React Native versions; may need marginRight/marginLeft
     marginBottom: 5,
   },
   dateRow: {
@@ -774,5 +815,5 @@ const styles = StyleSheet.create({
     backgroundColor: '#cccccc',
   },
 });
-
+ 
 export default CVGenerator;

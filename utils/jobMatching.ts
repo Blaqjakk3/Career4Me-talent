@@ -1,7 +1,7 @@
 import { Job, User } from '../types/jobs'
 
 /**
- * Get intelligent job matches based on user talent and career path
+ * Get intelligent job matches based on user career stage and selected career path
  * @param userTalent - User object containing career information
  * @param allJobs - Array of all available jobs
  * @param pathTitle - Title of the career path to match against
