@@ -71,7 +71,7 @@ const Dashboard = () => {
     // Small delay to allow animation to be visible, then navigate
     setTimeout(() => {
       router.push({
-        pathname: href
+        pathname: href as any
       });
     }, 100);
   };
